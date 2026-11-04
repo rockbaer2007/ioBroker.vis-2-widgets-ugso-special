@@ -218,7 +218,8 @@ export function createWidget(name) {
       event.stopPropagation();
       const inverse = this.lineSvg.current?.getScreenCTM()?.inverse();
       if (!inverse) return;
-      const { clientX: x, clientY: y } = event;
+      const x = event.clientX - drag.grabX;
+      const y = event.clientY - drag.grabY;
       const view = this.props.context?.views?.[this.props.view];
       const hits = document.elementsFromPoint(x, y);
       let nearest = null;
@@ -259,6 +260,7 @@ export function createWidget(name) {
     finishDockHandle(event, save) {
       if (this.dockDrag?.pointerId !== event.pointerId) return;
       event.stopPropagation();
+      if (save && this.dockDrag.point) this.moveDockHandle(event);
       const { end, target, point } = this.dockDrag;
       this.dockDrag = null;
       const { context, view, id } = this.props;
@@ -304,7 +306,11 @@ export function createWidget(name) {
             event.preventDefault();
             event.stopPropagation();
             event.currentTarget.setPointerCapture(event.pointerId);
-            this.dockDrag = { end, pointerId: event.pointerId };
+            this.dockDrag = {
+              end, pointerId: event.pointerId,
+              grabX: event.clientX - point[0],
+              grabY: event.clientY - point[1],
+            };
           },
           onPointerMove: event => this.moveDockHandle(event),
           onPointerUp: event => this.finishDockHandle(event, true),

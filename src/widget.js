@@ -1,5 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import setIcon from '../admin/ugso-spezial.svg?inline';
 import { convert, number, trimLine } from './logic.js';
 
 const h = React.createElement;
@@ -463,6 +464,7 @@ export function createWidget(name) {
         id: 'tplUgso' + name,
         visSet: 'vis-2-widgets-ugso-spezial',
         visSetLabel: 'UGSo Spezial',
+        visSetIcon: setIcon,
         visSetColor: '#38bdf8',
         visName: label,
         visDefaultStyle: { width: 180, height: name === 'SvgLine' ? 48 : 64 },

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vis-2-widgets-ugso-spezial",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "UGSo Spezial for ioBroker VIS 2",
   "scripts": {
     "build": "vite build"
@@ -19,6 +19,7 @@
   },
   "license": "MIT",
   "files": [
+    "admin/",
     "io-package.json",
     "widgets/",
     "LICENSE"

@@ -1,6 +1,10 @@
 # UGSo Spezial für ioBroker VIS 2
 
-In der Widget-Auswahl stehen **SVG-Line** und **SVG LineBox** zur Verfügung. SVG-Line liest einen ioBroker-Datenpunkt. SVG LineBox ist ein runder Dockpunkt mit einstellbarem Durchmesser in Pixeln. Sie summiert die Zahlenwerte direkt angedockter Linien und zeigt die Summe als Tooltip. Jede Linie zählt einmal. Konvertierungen und Wertübergaben können in Blockly erfolgen.
+In der Widget-Auswahl stehen **SVG-Line** und **SVG LineBox** zur Verfügung. SVG-Line liest einen ioBroker-Datenpunkt. SVG LineBox ist ein runder Dockpunkt mit einstellbarem Durchmesser in Pixeln.
+
+Docke die Linien am Punkt an und wähle sie in der LineBox unter **Ein- und Ausgänge** aus. Bis zu vier Eingangslinien liefern Zahlenwerte. Ein optionaler numerischer **Korrekturwert** wird addiert, negative Werte werden entsprechend abgezogen. Die Summe erscheint im Tooltip. Bis zu zwei Ausgangslinien übernehmen dieselbe Summe. Bei eingeschalteter Animation läuft sie bei positiven Werten vorwärts, bei negativen rückwärts und stoppt bei null oder fehlender Summe. Bestehende LineBoxen brauchen eine Auswahl ihrer Eingänge.
+
+Als **Summen-Datenpunkt** kannst du einen vorhandenen, beschreibbaren Zahlendatenpunkt unter `0_userdata.0` auswählen. Die VIS-Runtime schreibt die Summe dorthin. Wähle für die Korrektur und für den Ausgang verschiedene Datenpunkte. Fehlt ein gewählter Eingangswert, wird keine Teilsumme ausgegeben.
 
 Seit 0.1.18 enthält das Paket nur diese beiden Widgets. Ersetze die vier früheren Widget-Typen in vorhandenen Projekten vor dem Update oder verwende für diese Projekte weiter 0.1.17.
 
@@ -9,7 +13,7 @@ Seit 0.1.18 enthält das Paket nur diese beiden Widgets. Ersetze die vier frühe
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.20
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.21
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.

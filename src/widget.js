@@ -76,6 +76,18 @@ const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)
 const boxStyle = group('ugsoDisplay', 'Darstellung', [
   color, numericField('diameter', 'Durchmesser (px)', 16, 4, 200), unit, decimals,
 ]);
+const inputSlots = ['input1', 'input2', 'input3', 'input4'];
+const outputSlots = ['output1', 'output2'];
+const lineSlot = (key, label) => field(key, 'widget', label, { tpl: 'tplUgsoSvgLine', default: '' });
+const nodePorts = group('ugsoPorts', 'Ein- und Ausgänge', [
+  ...inputSlots.map((key, index) => lineSlot(key, 'Eingang ' + (index + 1))),
+  ...outputSlots.map((key, index) => lineSlot(key, 'Ausgang ' + (index + 1))),
+  field('correctionOid', 'id', 'Korrekturwert', { filter: { common: { type: 'number' } } }),
+  field('sumOid', 'id', 'Summen-Datenpunkt (0_userdata.0)', {
+    noSubscribe: true, filter: { common: { type: 'number', write: true } },
+  }),
+]);
+const selectedPorts = (data, slots) => [...new Set(slots.map(key => data[key]).filter(Boolean))];
 const clamp = (value, fallback, min, max) => Math.min(max, Math.max(min, number(value) ?? fallback));
 const ends = ['start', 'end'];
 const hasArrow = (data, end) => {
@@ -91,13 +103,14 @@ const pointsChanged = (previous, next) => next.some((point, index) =>
 
 const definitions = {
   SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
-  LineBox: ['SVG LineBox', [boxStyle]],
+  LineBox: ['SVG LineBox', [boxStyle, nodePorts]],
 };
 
 export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
     lineSvg = React.createRef();
+    nodeDot = React.createRef();
     dockPoints = [null, null];
     dockHandles = [null, null];
     dockFrame = null;
@@ -106,40 +119,43 @@ export function createWidget(name) {
     sum = null;
     sumFrame = null;
     lastLineInputs = null;
+    outputValue = null;
+    publishPending = false;
+    mounted = false;
 
     componentDidMount() {
       super.componentDidMount();
+      this.mounted = true;
       this.scheduleDockUpdate();
-      if (name === 'LineBox') {
-        document.addEventListener(lineChangedEvent, this.scheduleSum);
-        this.scheduleSum();
-      } else {
-        this.notifyLineChange();
-      }
+      document.addEventListener(lineChangedEvent, this.scheduleSum);
+      this.notifyLineChange();
+      this.scheduleSum();
     }
 
     componentDidUpdate(...args) {
       super.componentDidUpdate(...args);
       this.scheduleDockUpdate();
-      if (name === 'LineBox') this.scheduleSum();
-      else this.notifyLineChange();
+      this.notifyLineChange();
+      this.scheduleSum();
     }
 
     componentWillUnmount() {
       if (this.dockFrame !== null) cancelAnimationFrame(this.dockFrame);
-      if (name === 'LineBox') {
-        document.removeEventListener(lineChangedEvent, this.scheduleSum);
-        if (this.sumFrame !== null) cancelAnimationFrame(this.sumFrame);
-      } else {
-        document.dispatchEvent(new Event(lineChangedEvent));
-      }
+      this.mounted = false;
+      document.removeEventListener(lineChangedEvent, this.scheduleSum);
+      if (this.sumFrame !== null) cancelAnimationFrame(this.sumFrame);
+      document.dispatchEvent(new Event(lineChangedEvent));
       super.componentWillUnmount();
     }
 
     notifyLineChange() {
       const svg = this.lineSvg.current;
-      const inputs = [svg?.dataset.ugsoValue, svg?.dataset.ugsoStartDock, svg?.dataset.ugsoEndDock];
-      if (this.lastLineInputs?.every((value, index) => value === inputs[index])) return;
+      const data = this.state.rxData ?? {};
+      const inputs = name === 'LineBox'
+        ? [...selectedPorts(data, inputSlots), '|', ...selectedPorts(data, outputSlots), this.nodeDot.current?.dataset.ugsoCorrection]
+        : [svg?.dataset.ugsoValue, svg?.dataset.ugsoStartDock, svg?.dataset.ugsoEndDock];
+      if (this.lastLineInputs?.length === inputs.length &&
+          this.lastLineInputs.every((value, index) => value === inputs[index])) return;
       this.lastLineInputs = inputs;
       document.dispatchEvent(new Event(lineChangedEvent));
     }
@@ -148,20 +164,87 @@ export function createWidget(name) {
       if (this.sumFrame !== null) return;
       this.sumFrame = requestAnimationFrame(() => {
         this.sumFrame = null;
-        const { context, view, id } = this.props;
-        let sum = null;
-        for (const widgetId of Object.keys(context?.views?.[view]?.widgets ?? {})) {
-          const line = this.dockTargetElement(widgetId)?.querySelector('svg[data-ugso-line]');
-          if (!line || (line.dataset.ugsoStartDock !== id && line.dataset.ugsoEndDock !== id)) continue;
-          const value = number(line.dataset.ugsoValue);
-          if (value !== null) sum = (sum ?? 0) + value;
+        if (name === 'SvgLine') {
+          const output = this.lineInput(this.props.id, new Set());
+          const value = output.fromNode ? output.value : null;
+          if (value !== this.outputValue || output.fromNode !== this.fromNode) {
+            this.outputValue = value;
+            this.fromNode = output.fromNode;
+            this.forceUpdate();
+          }
+          return;
         }
-        if (sum !== this.sum) {
-          this.sum = sum;
+        const sum = this.nodeSum(this.props.id, new Set());
+        const changed = sum !== this.sum;
+        this.sum = sum;
+        if (changed) {
           this.forceUpdate();
         }
+        void this.publishSum();
       });
     };
+
+    nodeData(id) {
+      return this.props.context?.views?.[this.props.view]?.widgets?.[id]?.data ?? {};
+    }
+
+    lineInput(id, visited) {
+      const line = this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]');
+      if (!line) return { fromNode: false, value: null };
+      const { ugsoStartDock, ugsoEndDock, ugsoValue } = line.dataset;
+      const producers = [...new Set([ugsoStartDock, ugsoEndDock].filter(Boolean))]
+        .filter(nodeId => selectedPorts(this.nodeData(nodeId), outputSlots).includes(id));
+      if (!producers.length) return { fromNode: false, value: number(ugsoValue) };
+      return { fromNode: true, value: producers.length === 1 ? this.nodeSum(producers[0], visited) : null };
+    }
+
+    nodeSum(id, visited) {
+      if (visited.has(id)) return null;
+      const node = this.dockTargetElement(id)?.querySelector('[data-ugso-node]');
+      if (!node) return null;
+      const data = this.nodeData(id);
+      const inputs = selectedPorts(data, inputSlots);
+      const outputs = selectedPorts(data, outputSlots);
+      if (inputs.some(lineId => outputs.includes(lineId))) return null;
+      const correction = node.dataset.ugsoCorrection;
+      let sum = number(correction);
+      if (correction !== undefined && sum === null) return null;
+      const path = new Set([...visited, id]);
+      for (const lineId of inputs) {
+        const line = this.dockTargetElement(lineId)?.querySelector('svg[data-ugso-line]');
+        if (!line || (line.dataset.ugsoStartDock !== id && line.dataset.ugsoEndDock !== id)) return null;
+        const { value } = this.lineInput(lineId, path);
+        if (value === null) return null;
+        sum = (sum ?? 0) + value;
+      }
+      return Number.isFinite(sum) ? sum : null;
+    }
+
+    async publishSum() {
+      const { context, editMode } = this.props;
+      const { sumOid, correctionOid } = this.state.rxData ?? {};
+      const value = this.sum;
+      if (editMode || value === null || !sumOid?.startsWith('0_userdata.0.') ||
+          sumOid === correctionOid || this.publishPending ||
+          (this.lastPublished?.id === sumOid && this.lastPublished.value === value)) return;
+      const socket = context?.socket;
+      if (!socket) return;
+      this.publishPending = true;
+      try {
+        const object = await socket.getObject(sumOid);
+        if (object?.type !== 'state' || object.common?.type !== 'number' || !object.common.write) return;
+        const current = await socket.getState(sumOid);
+        if (!this.mounted || this.props.editMode || this.sum !== value ||
+            this.state.rxData?.sumOid !== sumOid || this.state.rxData?.correctionOid === sumOid) return;
+        if (current?.val !== value) await socket.setState(sumOid, { val: value, ack: true });
+        this.lastPublished = { id: sumOid, value };
+      } catch (error) {
+        console.warn('UGSo LineBox: Summe konnte nicht geschrieben werden.', error);
+      } finally {
+        this.publishPending = false;
+        if (this.mounted && (this.sum !== value || this.state.rxData?.sumOid !== sumOid)) this.scheduleSum();
+      }
+    }
 
     scheduleDockUpdate() {
       const data = this.state.rxData ?? {};
@@ -380,11 +463,14 @@ export function createWidget(name) {
       const stroke = data.color || '#38bdf8';
 
       if (name === 'SvgLine') {
-        const direction = number(value);
+        const rawDirection = number(value);
+        const direction = this.fromNode ? this.outputValue : rawDirection;
         const testAnimation = this.props.editMode &&
           (data.testAnimation === true || data.testAnimation === 'true');
-        const active = testAnimation || (data.animated === true || data.animated === 'true') &&
-          (!data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0));
+        const hasFlow = this.fromNode
+          ? direction !== null && direction !== 0
+          : !data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0);
+        const active = testAnimation || (data.animated === true || data.animated === 'true') && hasFlow;
         const width = clamp(data.lineWidth, 3, 1, 40);
         const arrowStart = hasArrow(data, 'start');
         const arrowEnd = hasArrow(data, 'end');
@@ -432,7 +518,7 @@ export function createWidget(name) {
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: 'visible',
           'data-ugso-line': '',
-          'data-ugso-value': direction ?? undefined,
+          'data-ugso-value': rawDirection ?? undefined,
           'data-ugso-start-dock': arrowStart ? undefined : data.startDockWidget,
           'data-ugso-end-dock': arrowEnd ? undefined : data.endDockWidget,
           'data-ugso-waypoint-start': arrowStart ? undefined : [x1, y1].join(' '),
@@ -461,10 +547,15 @@ export function createWidget(name) {
       const display = this.sum !== null && precision >= 0 ? this.sum.toFixed(precision) : this.sum;
       const text = display == null ? 'Keine Zahlenwerte angedockt' : String(display) + (data.unit ? ' ' + data.unit : '');
       const diameter = clamp(data.diameter, 16, 4, 200);
+      const correctionOid = data.correctionOid;
+      const correction = correctionOid && correctionOid !== 'nothing_selected'
+        ? number(values[correctionOid + '.val']) ?? ''
+        : undefined;
       return h('div', { style: {
         width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
       } }, h('span', {
-        'data-ugso-node': '', 'data-ugso-sum': this.sum ?? undefined, role: 'img', title: text,
+        ref: this.nodeDot, 'data-ugso-node': '', 'data-ugso-correction': correction,
+        'data-ugso-sum': this.sum ?? undefined, role: 'img', title: text,
         'aria-label': 'Summe: ' + text,
         style: { flex: 'none', width: diameter, height: diameter, borderRadius: '50%', background: stroke },
       }));

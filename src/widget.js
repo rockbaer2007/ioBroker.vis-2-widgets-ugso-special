@@ -60,7 +60,10 @@ const definitions = {
   SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
   LineBox: ['SVG LineBox', [source, boxStyle]],
   LineBoxMath: ['SVG LineBox Math', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, boxStyle]],
-  ValueConnection: ['Wert-Verbindung', [source, routing, lineStyle]],
+  ValueConnection: ['Wert-Verbindung', [source, routing, {
+    ...lineStyle,
+    fields: [...lineStyle.fields, field('showInRuntime', 'checkbox', 'In Runtime anzeigen', { default: false })],
+  }]],
   ValueConverter: ['Wert-Konverter', [source, group('ugsoConversion', 'Konvertierung', [conversion]), textStyle]],
   ValueCalculation: ['Wert-Berechnung', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, textStyle]],
 };
@@ -87,6 +90,10 @@ export function createWidget(name) {
     renderWidgetBody(props) {
       super.renderWidgetBody(props);
       const data = this.state.rxData ?? {};
+      if (name === 'ValueConnection' && !this.props.editMode &&
+          data.showInRuntime !== true && data.showInRuntime !== 'true') {
+        return null;
+      }
       const values = this.state.values ?? {};
       const value = values[data.oid + '.val'];
       const stroke = data.color || '#38bdf8';

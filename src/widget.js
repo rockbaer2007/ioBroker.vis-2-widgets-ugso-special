@@ -116,6 +116,8 @@ const definitions = {
 export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
+    static visHidden = name !== 'SvgLine' && name !== 'LineBox';
+
     lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
     lineSvg = React.createRef();
     dockPoints = [null, null];

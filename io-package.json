@@ -1,15 +1,15 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-spezial",
-    "version": "0.1.16",
+    "version": "0.1.17",
     "title": "UGSo Spezial",
     "titleLang": {
       "en": "UGSo Spezial",
       "de": "UGSo Spezial"
     },
     "desc": {
-      "de": "Spezial- und Datenfluss-Widgets für VIS 2",
-      "en": "Special and data flow widgets for VIS 2"
+      "de": "SVG-Linie und SVG-Wertbox für VIS 2",
+      "en": "SVG line and value box for VIS 2"
     },
     "authors": [
       "UGSo-Software"

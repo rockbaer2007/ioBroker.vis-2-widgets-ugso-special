@@ -465,7 +465,7 @@ export function createWidget(name) {
         visSet: 'vis-2-widgets-ugso-spezial',
         visSetLabel: 'UGSo Spezial',
         visSetIcon: setIcon,
-        visSetColor: '#38bdf8',
+        visSetColor: '#a5e1f8',
         visName: label,
         visDefaultStyle: { width: 180, height: name === 'SvgLine' ? 48 : 64 },
         visAttrs: groups.map(group => ({

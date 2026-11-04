@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-spezial",
-    "version": "0.1.28",
+    "version": "0.1.29",
     "icon": "ugso-spezial.svg",
     "extIcon": "https://raw.githubusercontent.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/main/admin/ugso-spezial.svg",
     "title": "UGSo Spezial",

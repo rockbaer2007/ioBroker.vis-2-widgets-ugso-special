@@ -153,7 +153,7 @@ export function createWidget(name) {
       const data = this.state.rxData ?? {};
       const inputs = name === 'LineBox'
         ? [...selectedPorts(data, inputSlots), '|', ...selectedPorts(data, outputSlots), this.nodeDot.current?.dataset.ugsoCorrection]
-        : [svg?.dataset.ugsoValue, svg?.dataset.ugsoStartDock, svg?.dataset.ugsoEndDock];
+        : [svg?.dataset.ugsoValue];
       if (this.lastLineInputs?.length === inputs.length &&
           this.lastLineInputs.every((value, index) => value === inputs[index])) return;
       this.lastLineInputs = inputs;
@@ -191,10 +191,11 @@ export function createWidget(name) {
     lineInput(id, visited) {
       const line = this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]');
       if (!line) return { fromNode: false, value: null };
-      const { ugsoStartDock, ugsoEndDock, ugsoValue } = line.dataset;
-      const producers = [...new Set([ugsoStartDock, ugsoEndDock].filter(Boolean))]
-        .filter(nodeId => selectedPorts(this.nodeData(nodeId), outputSlots).includes(id));
-      if (!producers.length) return { fromNode: false, value: number(ugsoValue) };
+      const widgets = this.props.context?.views?.[this.props.view]?.widgets ?? {};
+      const producers = Object.keys(widgets).filter(nodeId =>
+        widgets[nodeId].tpl === 'tplUgsoLineBox' &&
+        selectedPorts(this.nodeData(nodeId), outputSlots).includes(id));
+      if (!producers.length) return { fromNode: false, value: number(line.dataset.ugsoValue) };
       return { fromNode: true, value: producers.length === 1 ? this.nodeSum(producers[0], visited) : null };
     }
 
@@ -211,8 +212,6 @@ export function createWidget(name) {
       if (correction !== undefined && sum === null) return null;
       const path = new Set([...visited, id]);
       for (const lineId of inputs) {
-        const line = this.dockTargetElement(lineId)?.querySelector('svg[data-ugso-line]');
-        if (!line || (line.dataset.ugsoStartDock !== id && line.dataset.ugsoEndDock !== id)) return null;
         const { value } = this.lineInput(lineId, path);
         if (value === null) return null;
         sum = (sum ?? 0) + value;
@@ -523,8 +522,6 @@ export function createWidget(name) {
           overflow: 'visible',
           'data-ugso-line': '',
           'data-ugso-value': rawDirection ?? undefined,
-          'data-ugso-start-dock': arrowStart ? undefined : data.startDockWidget,
-          'data-ugso-end-dock': arrowEnd ? undefined : data.endDockWidget,
           'data-ugso-waypoint-start': arrowStart ? undefined : [x1, y1].join(' '),
           'data-ugso-waypoint-end': arrowEnd ? undefined : [x2, y2].join(' '),
           'data-ugso-waypoint-1': waypoints[0]?.join(' '),

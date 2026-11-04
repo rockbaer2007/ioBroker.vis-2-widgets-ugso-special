@@ -155,7 +155,14 @@ export function createWidget(name) {
       const points = ends.map(end => {
         const id = data[end + 'DockWidget'];
         if (!inverse || !id || id === this.props.id) return null;
-        const rect = this.dockTargetRect(id);
+        const waypoint = data[end + 'DockWaypoint'];
+        if (waypoint) {
+          const screen = this.waypointOnScreen(this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]'), waypoint);
+          if (!screen) return null;
+          const point = screen.matrixTransform(inverse);
+          return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
+        }
+        const rect = this.dockTargetElement(id)?.getBoundingClientRect();
         if (!rect?.width || !rect.height) return null;
         const x = rect.left + rect.width * clamp(data[end + 'DockX'], 50, 0, 100) / 100;
         const y = rect.top + rect.height * clamp(data[end + 'DockY'], 50, 0, 100) / 100;
@@ -179,10 +186,17 @@ export function createWidget(name) {
       return this.props.editMode && this.props.selectedWidgets?.includes(this.props.id);
     }
 
-    dockTargetRect(id) {
+    dockTargetElement(id) {
       const target = this.props.askView?.('getRef', { id });
-      const element = target?.widDiv ?? target?.refService?.current;
-      return element?.getBoundingClientRect();
+      return target?.widDiv ?? target?.refService?.current;
+    }
+
+    waypointOnScreen(svg, index) {
+      const coordinates = svg?.getAttribute('data-ugso-waypoint-' + index);
+      const matrix = coordinates && svg.getScreenCTM();
+      if (!matrix) return null;
+      const [x, y] = coordinates.split(' ').map(Number);
+      return new DOMPoint(x, y).matrixTransform(matrix);
     }
 
     moveDockHandle(event) {
@@ -197,12 +211,26 @@ export function createWidget(name) {
       let nearest = null;
       for (const id of Object.keys(view?.widgets ?? {})) {
         if (id === this.props.id) continue;
-        const rect = this.dockTargetRect(id);
+        const element = this.dockTargetElement(id);
+        const line = element?.querySelector('svg[data-ugso-line]');
+        const layer = hits.findIndex(element => element.id === id);
+        if (line) {
+          for (const waypoint of [1, 2]) {
+            const point = this.waypointOnScreen(line, waypoint);
+            if (!point) continue;
+            const distance = Math.hypot(x - point.x, y - point.y);
+            if (distance <= 12 && (!nearest?.waypoint || distance < nearest.distance)) {
+              nearest = { id, waypoint, snapX: point.x, snapY: point.y, distance, layer };
+            }
+          }
+          continue;
+        }
+        if (nearest?.waypoint) continue;
+        const rect = element?.getBoundingClientRect();
         if (!rect?.width || !rect.height) continue;
         const snapX = Math.max(rect.left, Math.min(rect.right, x));
         const snapY = Math.max(rect.top, Math.min(rect.bottom, y));
         const distance = Math.hypot(x - snapX, y - snapY);
-        const layer = hits.findIndex(element => element.id === id);
         if (distance > 12 || (nearest && (distance > nearest.distance ||
             (distance === nearest.distance && (layer < 0 || (nearest.layer >= 0 && layer >= nearest.layer)))))) continue;
         nearest = { id, rect, snapX, snapY, distance, layer };
@@ -224,7 +252,10 @@ export function createWidget(name) {
       const current = project?.[view]?.widgets?.[id];
       if (save && point && current && context.changeProject) {
         const data = { ...current.data, [end + 'DockWidget']: target?.id ?? '' };
-        if (target) {
+        delete data[end + 'DockWaypoint'];
+        if (target?.waypoint) {
+          data[end + 'DockWaypoint'] = target.waypoint;
+        } else if (target) {
           data[end + 'DockX'] = (target.snapX - target.rect.left) / target.rect.width * 100;
           data[end + 'DockY'] = (target.snapY - target.rect.top) / target.rect.height * 100;
         } else {
@@ -292,10 +323,8 @@ export function createWidget(name) {
     renderWidgetBody(props) {
       super.renderWidgetBody(props);
       const data = this.state.rxData ?? {};
-      if (name === 'ValueConnection' && !this.props.editMode &&
-          data.showInRuntime !== true && data.showInRuntime !== 'true') {
-        return null;
-      }
+      const hiddenInRuntime = name === 'ValueConnection' && !this.props.editMode &&
+        data.showInRuntime !== true && data.showInRuntime !== 'true';
       const values = this.state.values ?? {};
       const value = values[data.oid + '.val'];
       const stroke = data.color || '#38bdf8';
@@ -314,13 +343,14 @@ export function createWidget(name) {
         const points = [[x1, y1]];
         if (data.route === 'horizontal-first') points.push([x2, y1]);
         if (data.route === 'vertical-first') points.push([x1, y2]);
+        const waypoints = [];
         if (data.route === 'waypoint') {
-          points.push([clamp(data.viaX, 50, 0, 100), clamp(data.viaY, 25, 0, 100) * 0.4]);
+          waypoints.push([clamp(data.viaX, 50, 0, 100), clamp(data.viaY, 25, 0, 100) * 0.4]);
           if (data.secondWaypoint === true || data.secondWaypoint === 'true') {
-            points.push([clamp(data.via2X, 75, 0, 100), clamp(data.via2Y, 75, 0, 100) * 0.4]);
+            waypoints.push([clamp(data.via2X, 75, 0, 100), clamp(data.via2Y, 75, 0, 100) * 0.4]);
           }
         }
-        points.push([x2, y2]);
+        points.push(...waypoints, [x2, y2]);
         const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
         const arrowStart = data.arrowAtStart === true || data.arrowAtStart === 'true';
         const arrowEnd = data.arrowAtEnd === true || data.arrowAtEnd === 'true';
@@ -330,7 +360,12 @@ export function createWidget(name) {
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
-          overflow: arrowStart || arrowEnd || startDock || endDock || this.dockDrag ? 'visible' : undefined,
+          overflow: arrowStart || arrowEnd || startDock || endDock || this.dockDrag ||
+            (this.props.editMode && waypoints.length) ? 'visible' : undefined,
+          visibility: hiddenInRuntime ? 'hidden' : undefined,
+          'data-ugso-line': '',
+          'data-ugso-waypoint-1': waypoints[0]?.join(' '),
+          'data-ugso-waypoint-2': waypoints[1]?.join(' '),
           role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
             h('path', { d: path, stroke, strokeWidth: width,
@@ -351,7 +386,11 @@ export function createWidget(name) {
             h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
               markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
             h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null,
-          this.renderDockHandles(data));
+          this.renderDockHandles(data),
+          this.props.editMode && waypoints.map(([x, y], index) => h('circle', {
+            key: index, cx: x, cy: y, r: 1.5, fill: '#ef4444', stroke: '#fff',
+            strokeWidth: 1, vectorEffect: 'non-scaling-stroke', pointerEvents: 'none',
+          })));
       }
 
       let result = value;

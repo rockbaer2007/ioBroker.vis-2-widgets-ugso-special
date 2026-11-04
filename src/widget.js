@@ -364,8 +364,7 @@ export function createWidget(name) {
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
-          overflow: arrowStart || arrowEnd || startDock || endDock || this.dockDrag ||
-            (this.props.editMode && waypoints.length) ? 'visible' : undefined,
+          overflow: 'visible',
           'data-ugso-line': '',
           'data-ugso-waypoint-start': arrowStart ? undefined : [x1, y1].join(' '),
           'data-ugso-waypoint-end': arrowEnd ? undefined : [x2, y2].join(' '),

@@ -9,7 +9,7 @@ const input = field('oid', 'id', 'Datenpunkt A');
 const unit = field('unit', 'text', 'Einheit');
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
-const endXLimit = 95;
+const endXLimit = route => !route || route === 'straight' ? 100 : 95;
 const animated = field('animated', 'checkbox', 'Animation aktivieren', {
   default: false,
   tooltip: 'Ohne Datenpunkt läuft die Animation vorwärts. Ein Datenpunkt kann sie anhalten oder umkehren.',
@@ -32,7 +32,8 @@ const routing = group('ugsoRouting', 'Linienführung', [
       if (data.route !== 'horizontal-first' && data.route !== 'vertical-first') return;
       const startX = clamp(data.startX, 0, 0, 100);
       const startY = clamp(data.startY, 50, 0, 100);
-      const sameX = startX === clamp(data.endX, endXLimit, 0, endXLimit);
+      const limit = endXLimit(data.route);
+      const sameX = startX === clamp(data.endX, limit, 0, limit);
       const sameY = startY === clamp(data.endY, 50, 0, 100);
       if (sameX) data.endX = startX <= 50 ? startX + 25 : startX - 25;
       if (sameY) data.endY = startY <= 50 ? startY + 25 : startY - 25;
@@ -41,7 +42,17 @@ const routing = group('ugsoRouting', 'Linienführung', [
   }),
   numericField('startX', 'Start X (%)', 0, 0, 100),
   numericField('startY', 'Start Y (%)', 50, 0, 100),
-  numericField('endX', 'Ende X (%)', endXLimit, 0, endXLimit),
+  {
+    ...numericField('endX', 'Ende X (%)', 100, 0, 100),
+    tooltip: 'Gerade Linien reichen bis 100 %. Andere Verläufe enden spätestens bei 95 %.',
+    onChange: (_field, data, changeData) => {
+      const limit = endXLimit(data.route);
+      if (number(data.endX) > limit) {
+        data.endX = limit;
+        changeData(data);
+      }
+    },
+  },
   numericField('endY', 'Ende Y (%)', 50, 0, 100),
   { ...numericField('viaX', 'Zwischenpunkt X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
   { ...numericField('viaY', 'Zwischenpunkt Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
@@ -107,7 +118,7 @@ const hasArrow = (data, end) => {
   return value === true || value === 'true';
 };
 const freePoint = (data, end) => [
-  clamp(data[end + 'X'], end === 'start' ? 0 : endXLimit, 0, end === 'start' ? 100 : endXLimit),
+  clamp(data[end + 'X'], end === 'start' ? 0 : endXLimit(data.route), 0, end === 'start' ? 100 : endXLimit(data.route)),
   clamp(data[end + 'Y'], 50, 0, 100) * 0.4,
 ];
 const pointsChanged = (previous, next) => next.some((point, index) =>
@@ -401,7 +412,7 @@ export function createWidget(name) {
           data[end + 'DockX'] = (target.snapX - target.rect.left) / target.rect.width * 100;
           data[end + 'DockY'] = (target.snapY - target.rect.top) / target.rect.height * 100;
         } else {
-          data[end + 'X'] = clamp(point[0], 50, 0, end === 'end' ? endXLimit : 100);
+          data[end + 'X'] = clamp(point[0], 50, 0, end === 'end' ? endXLimit(data.route) : 100);
           data[end + 'Y'] = clamp(point[1] * 2.5, 50, 0, 100);
         }
         void context.changeProject({

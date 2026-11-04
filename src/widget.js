@@ -36,7 +36,19 @@ const routing = group('ugsoRouting', 'Linienführung', [
       { value: 'horizontal-first', label: 'Waagerecht, dann senkrecht' },
       { value: 'vertical-first', label: 'Senkrecht, dann waagerecht' },
       { value: 'waypoint', label: 'Über Zwischenpunkt' },
-    ], default: 'straight',
+    ],
+    default: 'straight',
+    tooltip: 'Für einen rechten Winkel müssen sich Start und Ende auf beiden Achsen unterscheiden.',
+    onChange: (_field, data, changeData) => {
+      if (data.route !== 'horizontal-first' && data.route !== 'vertical-first') return;
+      const startX = clamp(data.startX, 0, 0, 100);
+      const startY = clamp(data.startY, 50, 0, 100);
+      const sameX = startX === clamp(data.endX, 100, 0, 100);
+      const sameY = startY === clamp(data.endY, 50, 0, 100);
+      if (sameX) data.endX = startX <= 50 ? startX + 25 : startX - 25;
+      if (sameY) data.endY = startY <= 50 ? startY + 25 : startY - 25;
+      if (sameX || sameY) changeData(data);
+    },
   }),
   numericField('startX', 'Start X (%)', 0, 0, 100),
   numericField('startY', 'Start Y (%)', 50, 0, 100),
@@ -79,7 +91,10 @@ export function createWidget(name) {
         visSetColor: '#38bdf8',
         visName: label,
         visDefaultStyle: { width: 180, height: name === 'SvgLine' || name === 'ValueConnection' ? 48 : 64 },
-        visAttrs: structuredClone(groups),
+        visAttrs: groups.map(group => ({
+          ...group,
+          fields: group.fields.map(field => ({ ...field, options: structuredClone(field.options) })),
+        })),
       };
     }
 

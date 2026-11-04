@@ -2,6 +2,7 @@ import React from 'react';
 import { calculate, convert, number } from './logic.js';
 
 const h = React.createElement;
+let nextLineMarkerId = 0;
 const field = (name, type, label, extra = {}) => ({ name, type, label, ...extra });
 const input = field('oid', 'id', 'Datenpunkt A');
 const second = field('oidB', 'id', 'Datenpunkt B');
@@ -70,6 +71,8 @@ const routing = group('ugsoRouting', 'Linienführung', [
 ]);
 const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
+  field('arrowAtStart', 'checkbox', 'Pfeil am Anfang', { default: false }),
+  field('arrowAtEnd', 'checkbox', 'Pfeil am Ende', { default: false }),
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
@@ -94,6 +97,8 @@ const definitions = {
 export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
+    lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
+
     static getWidgetInfo() {
       return {
         id: 'tplUgso' + name,
@@ -143,14 +148,24 @@ export function createWidget(name) {
         }
         points.push([x2, y2]);
         const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
-        return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none', role: 'img', 'aria-label': label },
+        const arrowStart = data.arrowAtStart === true || data.arrowAtStart === 'true';
+        const arrowEnd = data.arrowAtEnd === true || data.arrowAtEnd === 'true';
+        const markerUrl = 'url(#' + this.lineMarkerId + ')';
+        return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
+          overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
           h('path', { d: path, stroke, strokeWidth: width,
             fill: 'none', opacity: clamp(data.opacity, 100, 0, 100) / 100, vectorEffect: 'non-scaling-stroke',
+            markerStart: arrowStart ? markerUrl : undefined,
+            markerEnd: arrowEnd ? markerUrl : undefined,
             strokeDasharray: active ? '8 5' : undefined },
             active ? h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
               dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' }) : null),
           name === 'ValueConnection' && value != null
-            ? h('text', { x: 50, y: 13, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, String(value)) : null);
+            ? h('text', { x: 50, y: 13, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, String(value)) : null,
+          arrowStart || arrowEnd ? h('defs', null,
+            h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
+              markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
+            h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null);
       }
 
       let result = value;

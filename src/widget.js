@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { convert, number, trimLine } from './logic.js';
 
 const h = React.createElement;
-let nextLineMarkerId = 0;
+const lineChangedEvent = 'ugso-svg-line-changed';
 const field = (name, type, label, extra = {}) => ({ name, type, label, ...extra });
 const input = field('oid', 'id', 'Datenpunkt A');
 const unit = field('unit', 'text', 'Einheit');
@@ -73,7 +73,9 @@ const animation = group('ugsoAnimation', 'Animation', [
   }),
 ]);
 const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)', -1, -1, 10);
-const boxStyle = group('ugsoDisplay', 'Darstellung', [color, unit, decimals]);
+const boxStyle = group('ugsoDisplay', 'Darstellung', [
+  color, numericField('diameter', 'Durchmesser (px)', 16, 4, 200), unit, decimals,
+]);
 const clamp = (value, fallback, min, max) => Math.min(max, Math.max(min, number(value) ?? fallback));
 const ends = ['start', 'end'];
 const hasArrow = (data, end) => {
@@ -89,34 +91,77 @@ const pointsChanged = (previous, next) => next.some((point, index) =>
 
 const definitions = {
   SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
-  LineBox: ['SVG LineBox', [source, boxStyle]],
+  LineBox: ['SVG LineBox', [boxStyle]],
 };
 
 export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
-    lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
     lineSvg = React.createRef();
     dockPoints = [null, null];
     dockHandles = [null, null];
     dockFrame = null;
     dockDrag = null;
     lineScale = [0, 0];
+    sum = null;
+    sumFrame = null;
+    lastLineInputs = null;
 
     componentDidMount() {
       super.componentDidMount();
       this.scheduleDockUpdate();
+      if (name === 'LineBox') {
+        document.addEventListener(lineChangedEvent, this.scheduleSum);
+        this.scheduleSum();
+      } else {
+        this.notifyLineChange();
+      }
     }
 
     componentDidUpdate(...args) {
       super.componentDidUpdate(...args);
       this.scheduleDockUpdate();
+      if (name === 'LineBox') this.scheduleSum();
+      else this.notifyLineChange();
     }
 
     componentWillUnmount() {
       if (this.dockFrame !== null) cancelAnimationFrame(this.dockFrame);
+      if (name === 'LineBox') {
+        document.removeEventListener(lineChangedEvent, this.scheduleSum);
+        if (this.sumFrame !== null) cancelAnimationFrame(this.sumFrame);
+      } else {
+        document.dispatchEvent(new Event(lineChangedEvent));
+      }
       super.componentWillUnmount();
     }
+
+    notifyLineChange() {
+      const svg = this.lineSvg.current;
+      const inputs = [svg?.dataset.ugsoValue, svg?.dataset.ugsoStartDock, svg?.dataset.ugsoEndDock];
+      if (this.lastLineInputs?.every((value, index) => value === inputs[index])) return;
+      this.lastLineInputs = inputs;
+      document.dispatchEvent(new Event(lineChangedEvent));
+    }
+
+    scheduleSum = () => {
+      if (this.sumFrame !== null) return;
+      this.sumFrame = requestAnimationFrame(() => {
+        this.sumFrame = null;
+        const { context, view, id } = this.props;
+        let sum = null;
+        for (const widgetId of Object.keys(context?.views?.[view]?.widgets ?? {})) {
+          const line = this.dockTargetElement(widgetId)?.querySelector('svg[data-ugso-line]');
+          if (!line || (line.dataset.ugsoStartDock !== id && line.dataset.ugsoEndDock !== id)) continue;
+          const value = number(line.dataset.ugsoValue);
+          if (value !== null) sum = (sum ?? 0) + value;
+        }
+        if (sum !== this.sum) {
+          this.sum = sum;
+          this.forceUpdate();
+        }
+      });
+    };
 
     scheduleDockUpdate() {
       const data = this.state.rxData ?? {};
@@ -143,10 +188,12 @@ export function createWidget(name) {
           const point = screen.matrixTransform(inverse);
           return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
         }
-        const rect = this.dockTargetElement(id)?.getBoundingClientRect();
+        const target = this.dockTargetElement(id);
+        const node = target?.querySelector('[data-ugso-node]');
+        const rect = (node ?? target)?.getBoundingClientRect();
         if (!rect?.width || !rect.height) return null;
-        const x = rect.left + rect.width * clamp(data[end + 'DockX'], 50, 0, 100) / 100;
-        const y = rect.top + rect.height * clamp(data[end + 'DockY'], 50, 0, 100) / 100;
+        const x = rect.left + rect.width * (node ? 50 : clamp(data[end + 'DockX'], 50, 0, 100)) / 100;
+        const y = rect.top + rect.height * (node ? 50 : clamp(data[end + 'DockY'], 50, 0, 100)) / 100;
         const point = new DOMPoint(x, y).matrixTransform(inverse);
         return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
       });
@@ -225,11 +272,12 @@ export function createWidget(name) {
           continue;
         }
         if (nearest?.waypoint) continue;
-        const rect = element?.getBoundingClientRect();
+        const node = element?.querySelector('[data-ugso-node]');
+        const rect = (node ?? element)?.getBoundingClientRect();
         if (!rect?.width || !rect.height) continue;
-        const snapX = Math.max(rect.left, Math.min(rect.right, x));
-        const snapY = Math.max(rect.top, Math.min(rect.bottom, y));
-        const distance = Math.hypot(x - snapX, y - snapY);
+        const snapX = node ? rect.left + rect.width / 2 : Math.max(rect.left, Math.min(rect.right, x));
+        const snapY = node ? rect.top + rect.height / 2 : Math.max(rect.top, Math.min(rect.bottom, y));
+        const distance = Math.hypot(x - snapX, y - snapY) - (node ? rect.width / 2 : 0);
         if (distance > 12 || (nearest && (distance > nearest.distance ||
             (distance === nearest.distance && (layer < 0 || (nearest.layer >= 0 && layer >= nearest.layer)))))) continue;
         nearest = { id, rect, snapX, snapY, distance, layer };
@@ -355,17 +403,38 @@ export function createWidget(name) {
           }
         }
         points.push(...waypoints, [x2, y2]);
-        const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
-        const visiblePoints = trimLine(points, this.lineScale, arrowStart ? 4 : 0, arrowEnd ? 4 : 0);
-        const visiblePath = visiblePoints.length ? 'M ' + visiblePoints.map(point => point.join(' ')).join(' L ') : '';
         const arrowSize = clamp(data.arrowSize, 5, 2, 20);
+        const arrowLength = Math.max(4, arrowSize * width);
+        const visiblePoints = trimLine(points, this.lineScale, arrowStart ? arrowLength : 0, arrowEnd ? arrowLength : 0);
+        const visiblePath = visiblePoints.length ? 'M ' + visiblePoints.map(point => point.join(' ')).join(' L ') : '';
+        const arrow = (tip, path, atStart) => {
+          const [scaleX, scaleY] = this.lineScale;
+          if (!scaleX || !scaleY) return null;
+          const basePath = trimLine(path, this.lineScale, atStart ? arrowLength : 0, atStart ? 0 : arrowLength);
+          const base = (atStart ? basePath[0] : basePath[basePath.length - 1]) ??
+            (atStart ? path[path.length - 1] : path[0]);
+          const dx = (base[0] - tip[0]) * scaleX;
+          const dy = (base[1] - tip[1]) * scaleY;
+          const length = Math.hypot(dx, dy);
+          if (!length) return null;
+          const halfWidth = arrowLength / 2;
+          const offsetX = -dy / length * halfWidth / scaleX;
+          const offsetY = dx / length * halfWidth / scaleY;
+          return h('polygon', {
+            points: [tip, [base[0] + offsetX, base[1] + offsetY], [base[0] - offsetX, base[1] - offsetY]]
+              .map(point => point.join(',')).join(' '),
+            fill: stroke,
+          });
+        };
         const dashLength = clamp(data.animationDashLength, 8, 1, 100);
         const gapLength = clamp(data.animationGapLength, 5, 1, 100);
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
-        const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: 'visible',
           'data-ugso-line': '',
+          'data-ugso-value': direction ?? undefined,
+          'data-ugso-start-dock': arrowStart ? undefined : data.startDockWidget,
+          'data-ugso-end-dock': arrowEnd ? undefined : data.endDockWidget,
           'data-ugso-waypoint-start': arrowStart ? undefined : [x1, y1].join(' '),
           'data-ugso-waypoint-end': arrowEnd ? undefined : [x2, y2].join(' '),
           'data-ugso-waypoint-1': waypoints[0]?.join(' '),
@@ -379,15 +448,8 @@ export function createWidget(name) {
               strokeDasharray: dashLength + ' ' + gapLength },
               h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: cycleOffset,
                 dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null,
-            arrowStart || arrowEnd ? h('path', {
-              d: path, fill: 'none', stroke: 'none', strokeWidth: width, vectorEffect: 'non-scaling-stroke',
-              markerStart: arrowStart ? markerUrl : undefined,
-              markerEnd: arrowEnd ? markerUrl : undefined,
-            }) : null),
-          arrowStart || arrowEnd ? h('defs', null,
-            h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
-              markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
-            h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null,
+            arrowStart ? arrow(points[0], points, true) : null,
+            arrowEnd ? arrow(points[points.length - 1], points, false) : null),
           this.renderDockHandles(data),
           this.props.editMode && waypoints.map(([x, y], index) => h('circle', {
             key: index, cx: x, cy: y, r: 1.5, fill: '#ef4444', stroke: '#fff',
@@ -396,12 +458,16 @@ export function createWidget(name) {
       }
 
       const precision = Math.trunc(clamp(data.decimals, -1, -1, 10));
-      const display = typeof value === 'number' && precision >= 0 ? value.toFixed(precision) : value;
-      const text = display == null ? '—' : String(display) + (data.unit ? ' ' + data.unit : '');
+      const display = this.sum !== null && precision >= 0 ? this.sum.toFixed(precision) : this.sum;
+      const text = display == null ? 'Keine Zahlenwerte angedockt' : String(display) + (data.unit ? ' ' + data.unit : '');
+      const diameter = clamp(data.diameter, 16, 4, 200);
       return h('div', { style: {
-        width: '100%', height: '100%', boxSizing: 'border-box', display: 'grid', placeItems: 'center',
-        overflow: 'hidden', border: '2px solid ' + stroke, borderRadius: 8,
-      }, title: text }, text);
+        width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      } }, h('span', {
+        'data-ugso-node': '', 'data-ugso-sum': this.sum ?? undefined, role: 'img', title: text,
+        'aria-label': 'Summe: ' + text,
+        style: { flex: 'none', width: diameter, height: diameter, borderRadius: '50%', background: stroke },
+      }));
     }
   };
 }

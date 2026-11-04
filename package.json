@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vis-2-widgets-ugso-spezial",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "UGSo Spezial for ioBroker VIS 2",
   "scripts": {
     "build": "vite build"

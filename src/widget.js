@@ -80,6 +80,10 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
   field('animationFlowColor', 'color', 'Bewegte Farbe', { default: '#ffffff' }),
+  field('testAnimation', 'checkbox', 'Animation testen', {
+    default: false,
+    tooltip: 'Zeigt die Animation im Editor auch bei ausgeschalteter Animation oder stehendem Datenpunkt.',
+  }),
 ]);
 const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)', -1, -1, 10);
 const textStyle = group('ugsoDisplay', 'Darstellung', [unit, decimals]);
@@ -135,7 +139,9 @@ export function createWidget(name) {
 
       if (name === 'SvgLine' || name === 'ValueConnection') {
         const direction = number(value);
-        const active = (data.animated === true || data.animated === 'true') &&
+        const testAnimation = name === 'SvgLine' && this.props.editMode &&
+          (data.testAnimation === true || data.testAnimation === 'true');
+        const active = testAnimation || (data.animated === true || data.animated === 'true') &&
           (!data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0));
         const width = clamp(data.lineWidth, 3, 1, 40);
         const x1 = clamp(data.startX, 0, 0, 100);

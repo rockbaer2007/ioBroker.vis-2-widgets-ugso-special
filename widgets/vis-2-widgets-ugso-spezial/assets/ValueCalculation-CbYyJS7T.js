@@ -1,1 +1,0 @@
-import{t as e}from"./widget-8dhWDMn7.js";var t=e(`ValueCalculation`);export{t as default};

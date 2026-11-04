@@ -7,10 +7,19 @@ const input = field('oid', 'id', 'Datenpunkt A');
 const second = field('oidB', 'id', 'Datenpunkt B');
 const unit = field('unit', 'text', 'Einheit');
 const operation = field('operation', 'select', 'Rechenart', {
-  options: ['add', 'subtract', 'multiply', 'divide'], default: 'add',
+  options: [
+    { value: 'add', label: 'Addieren' },
+    { value: 'subtract', label: 'Subtrahieren' },
+    { value: 'multiply', label: 'Multiplizieren' },
+    { value: 'divide', label: 'Dividieren' },
+  ], default: 'add',
 });
 const conversion = field('conversion', 'select', 'Konvertierung', {
-  options: ['number', 'text', 'boolean'], default: 'number',
+  options: [
+    { value: 'number', label: 'Zahl' },
+    { value: 'text', label: 'Text' },
+    { value: 'boolean', label: 'Schaltwert' },
+  ], default: 'number',
 });
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
@@ -26,12 +35,15 @@ const routing = group('ugsoRouting', 'Linienführung', [
       { value: 'straight', label: 'Gerade' },
       { value: 'horizontal-first', label: 'Waagerecht, dann senkrecht' },
       { value: 'vertical-first', label: 'Senkrecht, dann waagerecht' },
+      { value: 'waypoint', label: 'Über Zwischenpunkt' },
     ], default: 'straight',
   }),
   numericField('startX', 'Start X (%)', 0, 0, 100),
   numericField('startY', 'Start Y (%)', 50, 0, 100),
   numericField('endX', 'Ende X (%)', 100, 0, 100),
   numericField('endY', 'Ende Y (%)', 50, 0, 100),
+  { ...numericField('viaX', 'Zwischenpunkt X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
+  { ...numericField('viaY', 'Zwischenpunkt Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
 ]);
 const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
@@ -63,6 +75,7 @@ export function createWidget(name) {
         visSetLabel: 'UGSo Spezial',
         visSetColor: '#38bdf8',
         visName: label,
+        visDefaultStyle: { width: 180, height: name === 'SvgLine' || name === 'ValueConnection' ? 48 : 64 },
         visAttrs: structuredClone(groups),
       };
     }
@@ -86,10 +99,16 @@ export function createWidget(name) {
         const y1 = clamp(data.startY, 50, 0, 100) * 0.4;
         const x2 = clamp(data.endX, 100, 0, 100);
         const y2 = clamp(data.endY, 50, 0, 100) * 0.4;
-        const corner = data.route === 'horizontal-first' ? ` L ${x2} ${y1}`
-          : data.route === 'vertical-first' ? ` L ${x1} ${y2}` : '';
+        const points = [[x1, y1]];
+        if (data.route === 'horizontal-first') points.push([x2, y1]);
+        if (data.route === 'vertical-first') points.push([x1, y2]);
+        if (data.route === 'waypoint') {
+          points.push([clamp(data.viaX, 50, 0, 100), clamp(data.viaY, 25, 0, 100) * 0.4]);
+        }
+        points.push([x2, y2]);
+        const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
         return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none', role: 'img', 'aria-label': label },
-          h('path', { d: `M ${x1} ${y1}${corner} L ${x2} ${y2}`, stroke, strokeWidth: width,
+          h('path', { d: path, stroke, strokeWidth: width,
             fill: 'none', opacity: clamp(data.opacity, 100, 0, 100) / 100, vectorEffect: 'non-scaling-stroke',
             strokeDasharray: active ? '8 5' : undefined },
             active ? h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,

@@ -1,0 +1,53 @@
+{
+  "common": {
+    "name": "vis-2-widgets-ugso-spezial",
+    "version": "0.1.0",
+    "title": "UGSo Spezial",
+    "titleLang": {
+      "en": "UGSo Spezial",
+      "de": "UGSo Spezial"
+    },
+    "desc": {
+      "de": "Spezial- und Datenfluss-Widgets für VIS 2",
+      "en": "Special and data flow widgets for VIS 2"
+    },
+    "authors": [
+      "UGSo-Software"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "mode": "once",
+    "enabled": true,
+    "onlyWWW": true,
+    "adminUI": {
+      "config": "none"
+    },
+    "type": "visualization-widgets",
+    "connectionType": "local",
+    "dataSource": "push",
+    "dependencies": [
+      "vis-2"
+    ],
+    "visWidgets": {
+      "ugsoSpezial": {
+        "name": "ugsoSpezial",
+        "url": "vis-2-widgets-ugso-spezial/customWidgets.js",
+        "bundlerType": "module",
+        "components": [
+          "SvgLine",
+          "LineBox",
+          "LineBoxMath",
+          "ValueConnection",
+          "ValueConverter",
+          "ValueCalculation"
+        ]
+      }
+    }
+  },
+  "native": {},
+  "objects": [],
+  "instanceObjects": []
+}

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-spezial",
-    "version": "0.1.30",
+    "version": "0.1.31",
     "news": {
+      "0.1.31": {
+        "en": "Publish the npm package with a provenance statement.",
+        "de": "npm-Paket mit Herkunftsnachweis veröffentlichen.",
+        "ru": "Публикация пакета npm с подтверждением происхождения.",
+        "pt": "Publicação do pacote npm com declaração de proveniência.",
+        "nl": "Publicatie van het npm-pakket met herkomstverklaring.",
+        "fr": "Publication du paquet npm avec une attestation de provenance.",
+        "it": "Pubblicazione del pacchetto npm con attestazione di provenienza.",
+        "es": "Publicación del paquete npm con una declaración de procedencia.",
+        "pl": "Publikacja pakietu npm z poświadczeniem pochodzenia.",
+        "uk": "Публікація пакета npm з підтвердженням походження.",
+        "zh-cn": "发布带有来源证明的 npm 软件包。"
+      },
       "0.1.30": {
         "en": "Prepare for the ioBroker adapter catalogue.",
         "de": "Aufnahme in den ioBroker-Adapterkatalog vorbereiten.",

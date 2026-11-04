@@ -15,6 +15,10 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 ## Changelog
 
+### 0.1.31
+
+- Publish the npm package with a provenance statement through GitHub Actions.
+
 ### 0.1.30
 
 - Prepare adapter metadata and automated VIS 2 installation tests for the ioBroker catalogue.

@@ -5,7 +5,16 @@
     "news": {
       "0.1.30": {
         "en": "Prepare for the ioBroker adapter catalogue.",
-        "de": "Aufnahme in den ioBroker-Adapterkatalog vorbereiten."
+        "de": "Aufnahme in den ioBroker-Adapterkatalog vorbereiten.",
+        "ru": "Подготовка к добавлению в каталог ioBroker.",
+        "pt": "Preparação para o catálogo de adaptadores ioBroker.",
+        "nl": "Voorbereiding voor de ioBroker-adaptercatalogus.",
+        "fr": "Préparation de l’ajout au catalogue ioBroker.",
+        "it": "Preparazione per il catalogo degli adattatori ioBroker.",
+        "es": "Preparación para el catálogo de adaptadores de ioBroker.",
+        "pl": "Przygotowanie do katalogu adapterów ioBroker.",
+        "uk": "Підготовка до додавання в каталог ioBroker.",
+        "zh-cn": "为加入 ioBroker 适配器目录做准备。"
       }
     },
     "icon": "ugso-spezial.svg",
@@ -38,9 +47,8 @@
       "uk": "Лінія SVG і вузол підсумовування для VIS 2",
       "zh-cn": "适用于 VIS 2 的 SVG 线条和求和节点"
     },
-    "author": "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>",
     "authors": [
-      "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>"
+      "UGSo-Software <rockbaer2007@live.de>"
     ],
     "licenseInformation": {
       "type": "free",
@@ -63,7 +71,7 @@
     "visWidgets": {
       "ugsoSpezial": {
         "name": "ugsoSpezial",
-        "i18n": false,
+        "i18n": {},
         "url": "vis-2-widgets-ugso-spezial/customWidgets.js",
         "bundlerType": "module",
         "components": [

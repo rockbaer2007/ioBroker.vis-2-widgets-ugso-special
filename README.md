@@ -4,7 +4,7 @@ UGSo Spezial adds animated SVG lines and summing nodes to ioBroker VIS 2. [Germa
 
 ## Installation
 
-For testing, enable expert mode in ioBroker Admin and select **Install from URL** on the Adapters page. Enter the [version 0.1.30 archive URL](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.30) as a custom URL. Reload the VIS 2 editor and open **UGSo Spezial** in the widget palette.
+After installation, open **UGSo Spezial** in the VIS 2 widget palette. See the [release page](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/releases) for available versions.
 
 ## Widgets
 
@@ -28,4 +28,4 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 MIT License. See [LICENSE](LICENSE).
 
-Copyright (c) 2026 UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>
+Copyright (c) 2026 UGSo-Software <rockbaer2007@live.de>

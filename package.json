@@ -6,7 +6,7 @@
     "build": "vite build",
     "test": "mocha test/widgets.test.cjs"
   },
-  "author": "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>",
+  "author": "UGSo-Software <rockbaer2007@live.de>",
   "keywords": [
     "ioBroker",
     "vis-2",

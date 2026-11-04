@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { federation } from '@module-federation/vite';
 
-const widgets = ['SvgLine', 'LineBox', 'LineBoxMath', 'ValueConnection', 'ValueConverter', 'ValueCalculation'];
+const widgets = ['SvgLine', 'LineBox'];
 export default defineConfig({
   base: './',
   plugins: [federation({

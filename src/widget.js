@@ -1,28 +1,12 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { calculate, convert, number } from './logic.js';
+import { convert, number, trimLine } from './logic.js';
 
 const h = React.createElement;
 let nextLineMarkerId = 0;
 const field = (name, type, label, extra = {}) => ({ name, type, label, ...extra });
 const input = field('oid', 'id', 'Datenpunkt A');
-const second = field('oidB', 'id', 'Datenpunkt B');
 const unit = field('unit', 'text', 'Einheit');
-const operation = field('operation', 'select', 'Rechenart', {
-  options: [
-    { value: 'add', label: 'Addieren' },
-    { value: 'subtract', label: 'Subtrahieren' },
-    { value: 'multiply', label: 'Multiplizieren' },
-    { value: 'divide', label: 'Dividieren' },
-  ], default: 'add',
-});
-const conversion = field('conversion', 'select', 'Konvertierung', {
-  options: [
-    { value: 'number', label: 'Zahl' },
-    { value: 'text', label: 'Text' },
-    { value: 'boolean', label: 'Schaltwert' },
-  ], default: 'number',
-});
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
 const animated = field('animated', 'checkbox', 'Animation aktivieren', {
@@ -31,7 +15,6 @@ const animated = field('animated', 'checkbox', 'Animation aktivieren', {
 });
 const group = (name, label, fields) => ({ name, label, fields });
 const source = group('ugsoSource', 'Datenquelle', [input]);
-const arithmetic = group('ugsoCalculation', 'Berechnung', [operation]);
 const numericField = (name, label, value, min, max, step = 1) =>
   field(name, 'number', label, { default: value, min, max, step });
 const routing = group('ugsoRouting', 'Linienführung', [
@@ -90,10 +73,13 @@ const animation = group('ugsoAnimation', 'Animation', [
   }),
 ]);
 const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)', -1, -1, 10);
-const textStyle = group('ugsoDisplay', 'Darstellung', [unit, decimals]);
 const boxStyle = group('ugsoDisplay', 'Darstellung', [color, unit, decimals]);
 const clamp = (value, fallback, min, max) => Math.min(max, Math.max(min, number(value) ?? fallback));
 const ends = ['start', 'end'];
+const hasArrow = (data, end) => {
+  const value = end === 'start' ? data.arrowAtStart : data.arrowAtEnd;
+  return value === true || value === 'true';
+};
 const freePoint = (data, end) => [
   clamp(data[end + 'X'], end === 'start' ? 0 : 100, 0, 100),
   clamp(data[end + 'Y'], 50, 0, 100) * 0.4,
@@ -104,26 +90,18 @@ const pointsChanged = (previous, next) => next.some((point, index) =>
 const definitions = {
   SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
   LineBox: ['SVG LineBox', [source, boxStyle]],
-  LineBoxMath: ['SVG LineBox Math', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, boxStyle]],
-  ValueConnection: ['Wert-Verbindung', [source, routing, {
-    ...lineStyle,
-    fields: [...lineStyle.fields, field('showInRuntime', 'checkbox', 'In Runtime anzeigen', { default: false })],
-  }]],
-  ValueConverter: ['Wert-Konverter', [source, group('ugsoConversion', 'Konvertierung', [conversion]), textStyle]],
-  ValueCalculation: ['Wert-Berechnung', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, textStyle]],
 };
 
 export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
-    static visHidden = name !== 'SvgLine' && name !== 'LineBox';
-
     lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
     lineSvg = React.createRef();
     dockPoints = [null, null];
     dockHandles = [null, null];
     dockFrame = null;
     dockDrag = null;
+    lineScale = [0, 0];
 
     componentDidMount() {
       super.componentDidMount();
@@ -143,7 +121,7 @@ export function createWidget(name) {
     scheduleDockUpdate() {
       const data = this.state.rxData ?? {};
       if (!this.lineSvg.current ||
-          !(data.startDockWidget || data.endDockWidget || this.showDockHandles())) return;
+          !(ends.some(end => hasArrow(data, end) || data[end + 'DockWidget']) || this.showDockHandles())) return;
       if (this.dockFrame === null) this.dockFrame = requestAnimationFrame(this.updateDockPoints);
     }
 
@@ -154,9 +132,10 @@ export function createWidget(name) {
       const data = this.state.rxData ?? {};
       const matrix = svg.getScreenCTM();
       const inverse = matrix?.inverse();
+      const scale = matrix ? [Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d)] : [0, 0];
       const points = ends.map(end => {
         const id = data[end + 'DockWidget'];
-        if (!inverse || !id || id === this.props.id) return null;
+        if (hasArrow(data, end) || !inverse || !id || id === this.props.id) return null;
         const waypoint = data[end + 'DockWaypoint'];
         if (waypoint) {
           const screen = this.linePointOnScreen(this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]'), waypoint);
@@ -172,12 +151,15 @@ export function createWidget(name) {
         return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
       });
       const handles = ends.map((end, index) => {
-        if (!matrix || (!this.showDockHandles() && !(this.props.editMode && points[index]))) return null;
+        if (hasArrow(data, end) || !matrix ||
+            (!this.showDockHandles() && !(this.props.editMode && points[index]))) return null;
         const local = this.dockDrag?.end === end ? this.dockDrag.point : points[index] ?? freePoint(data, end);
         const screen = new DOMPoint(...local).matrixTransform(matrix);
         return [screen.x, screen.y];
       });
-      const changed = pointsChanged(this.dockPoints, points) || pointsChanged(this.dockHandles, handles);
+      const changed = pointsChanged(this.dockPoints, points) || pointsChanged(this.dockHandles, handles) ||
+        (ends.some(end => hasArrow(data, end)) && scale.some((value, index) => value !== this.lineScale[index]));
+      this.lineScale = scale;
       this.dockPoints = points;
       this.dockHandles = handles;
       if (changed) this.forceUpdate();
@@ -268,7 +250,7 @@ export function createWidget(name) {
       const { context, view, id } = this.props;
       const project = context?.views;
       const current = project?.[view]?.widgets?.[id];
-      if (save && point && current && context.changeProject) {
+      if (save && point && current && !hasArrow(current.data, end) && context.changeProject) {
         const data = { ...current.data, [end + 'DockWidget']: target?.id ?? '' };
         delete data[end + 'DockWaypoint'];
         if (target?.waypoint) {
@@ -293,7 +275,7 @@ export function createWidget(name) {
       const selected = this.showDockHandles();
       return createPortal(this.dockHandles.map((point, index) => {
         const end = ends[index];
-        if (!point || (!selected && !data[end + 'DockWidget'])) return null;
+        if (hasArrow(data, end) || !point || (!selected && !data[end + 'DockWidget'])) return null;
         return h('span', {
           key: end,
           title: index === 0 ? 'Startpunkt ziehen' : 'Endpunkt ziehen',
@@ -330,7 +312,7 @@ export function createWidget(name) {
         visSetLabel: 'UGSo Spezial',
         visSetColor: '#38bdf8',
         visName: label,
-        visDefaultStyle: { width: 180, height: name === 'SvgLine' || name === 'ValueConnection' ? 48 : 64 },
+        visDefaultStyle: { width: 180, height: name === 'SvgLine' ? 48 : 64 },
         visAttrs: groups.map(group => ({
           ...group,
           fields: group.fields.map(field => ({ ...field, options: structuredClone(field.options) })),
@@ -345,23 +327,23 @@ export function createWidget(name) {
     renderWidgetBody(props) {
       super.renderWidgetBody(props);
       const data = this.state.rxData ?? {};
-      const hiddenInRuntime = name === 'ValueConnection' && !this.props.editMode &&
-        data.showInRuntime !== true && data.showInRuntime !== 'true';
       const values = this.state.values ?? {};
       const value = values[data.oid + '.val'];
       const stroke = data.color || '#38bdf8';
 
-      if (name === 'SvgLine' || name === 'ValueConnection') {
+      if (name === 'SvgLine') {
         const direction = number(value);
-        const testAnimation = name === 'SvgLine' && this.props.editMode &&
+        const testAnimation = this.props.editMode &&
           (data.testAnimation === true || data.testAnimation === 'true');
         const active = testAnimation || (data.animated === true || data.animated === 'true') &&
           (!data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0));
         const width = clamp(data.lineWidth, 3, 1, 40);
-        const startDock = data.startDockWidget ? this.dockPoints[0] : null;
-        const endDock = data.endDockWidget ? this.dockPoints[1] : null;
-        const [x1, y1] = (this.dockDrag?.end === 'start' && this.dockDrag.point) || startDock || freePoint(data, 'start');
-        const [x2, y2] = (this.dockDrag?.end === 'end' && this.dockDrag.point) || endDock || freePoint(data, 'end');
+        const arrowStart = hasArrow(data, 'start');
+        const arrowEnd = hasArrow(data, 'end');
+        const startDock = !arrowStart && data.startDockWidget ? this.dockPoints[0] : null;
+        const endDock = !arrowEnd && data.endDockWidget ? this.dockPoints[1] : null;
+        const [x1, y1] = (!arrowStart && this.dockDrag?.end === 'start' && this.dockDrag.point) || startDock || freePoint(data, 'start');
+        const [x2, y2] = (!arrowEnd && this.dockDrag?.end === 'end' && this.dockDrag.point) || endDock || freePoint(data, 'end');
         const points = [[x1, y1]];
         if (data.route === 'horizontal-first') points.push([x2, y1]);
         if (data.route === 'vertical-first') points.push([x1, y2]);
@@ -374,8 +356,8 @@ export function createWidget(name) {
         }
         points.push(...waypoints, [x2, y2]);
         const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
-        const arrowStart = data.arrowAtStart === true || data.arrowAtStart === 'true';
-        const arrowEnd = data.arrowAtEnd === true || data.arrowAtEnd === 'true';
+        const visiblePoints = trimLine(points, this.lineScale, arrowStart ? 4 : 0, arrowEnd ? 4 : 0);
+        const visiblePath = visiblePoints.length ? 'M ' + visiblePoints.map(point => point.join(' ')).join(' L ') : '';
         const arrowSize = clamp(data.arrowSize, 5, 2, 20);
         const dashLength = clamp(data.animationDashLength, 8, 1, 100);
         const gapLength = clamp(data.animationGapLength, 5, 1, 100);
@@ -384,17 +366,16 @@ export function createWidget(name) {
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: arrowStart || arrowEnd || startDock || endDock || this.dockDrag ||
             (this.props.editMode && waypoints.length) ? 'visible' : undefined,
-          visibility: hiddenInRuntime ? 'hidden' : undefined,
           'data-ugso-line': '',
-          'data-ugso-waypoint-start': [x1, y1].join(' '),
-          'data-ugso-waypoint-end': [x2, y2].join(' '),
+          'data-ugso-waypoint-start': arrowStart ? undefined : [x1, y1].join(' '),
+          'data-ugso-waypoint-end': arrowEnd ? undefined : [x2, y2].join(' '),
           'data-ugso-waypoint-1': waypoints[0]?.join(' '),
           'data-ugso-waypoint-2': waypoints[1]?.join(' '),
           role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
-            h('path', { d: path, stroke, strokeWidth: width,
-              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
-            active ? h('path', { d: path, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
+            visiblePath ? h('path', { d: visiblePath, stroke, strokeWidth: width,
+              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }) : null,
+            active && visiblePath ? h('path', { d: visiblePath, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke',
               strokeDasharray: dashLength + ' ' + gapLength },
               h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: cycleOffset,
@@ -404,8 +385,6 @@ export function createWidget(name) {
               markerStart: arrowStart ? markerUrl : undefined,
               markerEnd: arrowEnd ? markerUrl : undefined,
             }) : null),
-          name === 'ValueConnection' && value != null
-            ? h('text', { x: 50, y: 13, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, String(value)) : null,
           arrowStart || arrowEnd ? h('defs', null,
             h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
               markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
@@ -417,19 +396,12 @@ export function createWidget(name) {
           })));
       }
 
-      let result = value;
-      if (name === 'LineBoxMath' || name === 'ValueCalculation') {
-        result = calculate(value, values[data.oidB + '.val'], data.operation);
-      } else if (name === 'ValueConverter') {
-        result = convert(value, data.conversion);
-      }
       const precision = Math.trunc(clamp(data.decimals, -1, -1, 10));
-      const display = typeof result === 'number' && precision >= 0 ? result.toFixed(precision) : result;
+      const display = typeof value === 'number' && precision >= 0 ? value.toFixed(precision) : value;
       const text = display == null ? '—' : String(display) + (data.unit ? ' ' + data.unit : '');
-      const isBox = name.startsWith('LineBox');
       return h('div', { style: {
         width: '100%', height: '100%', boxSizing: 'border-box', display: 'grid', placeItems: 'center',
-        overflow: 'hidden', border: isBox ? '2px solid ' + stroke : undefined, borderRadius: isBox ? 8 : undefined,
+        overflow: 'hidden', border: '2px solid ' + stroke, borderRadius: 8,
       }, title: text }, text);
     }
   };

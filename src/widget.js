@@ -9,6 +9,7 @@ const input = field('oid', 'id', 'Datenpunkt A');
 const unit = field('unit', 'text', 'Einheit');
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
+const endXLimit = 95;
 const animated = field('animated', 'checkbox', 'Animation aktivieren', {
   default: false,
   tooltip: 'Ohne Datenpunkt läuft die Animation vorwärts. Ein Datenpunkt kann sie anhalten oder umkehren.',
@@ -31,7 +32,7 @@ const routing = group('ugsoRouting', 'Linienführung', [
       if (data.route !== 'horizontal-first' && data.route !== 'vertical-first') return;
       const startX = clamp(data.startX, 0, 0, 100);
       const startY = clamp(data.startY, 50, 0, 100);
-      const sameX = startX === clamp(data.endX, 100, 0, 100);
+      const sameX = startX === clamp(data.endX, endXLimit, 0, endXLimit);
       const sameY = startY === clamp(data.endY, 50, 0, 100);
       if (sameX) data.endX = startX <= 50 ? startX + 25 : startX - 25;
       if (sameY) data.endY = startY <= 50 ? startY + 25 : startY - 25;
@@ -40,7 +41,7 @@ const routing = group('ugsoRouting', 'Linienführung', [
   }),
   numericField('startX', 'Start X (%)', 0, 0, 100),
   numericField('startY', 'Start Y (%)', 50, 0, 100),
-  numericField('endX', 'Ende X (%)', 100, 0, 100),
+  numericField('endX', 'Ende X (%)', endXLimit, 0, endXLimit),
   numericField('endY', 'Ende Y (%)', 50, 0, 100),
   { ...numericField('viaX', 'Zwischenpunkt X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
   { ...numericField('viaY', 'Zwischenpunkt Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
@@ -64,6 +65,11 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
+  field('speedByValue', 'checkbox', 'Geschwindigkeit nach Wert', { default: true }),
+  { ...numericField('speedReference', 'Referenzwert für Zyklusdauer', 50, 0.01, 1000000000, 0.01),
+    hidden: 'data.speedByValue === false || data.speedByValue === "false"',
+    tooltip: 'Beim Referenzwert gilt die eingestellte Zyklusdauer. Doppelte Werte laufen doppelt so schnell.',
+  },
   field('animationFlowColor', 'color', 'Bewegte Farbe', { default: '#ffffff' }),
   numericField('animationDashLength', 'Länge der bewegten Farbe', 8, 1, 100),
   numericField('animationGapLength', 'Länge der Grundfarbe', 5, 1, 100),
@@ -95,7 +101,7 @@ const hasArrow = (data, end) => {
   return value === true || value === 'true';
 };
 const freePoint = (data, end) => [
-  clamp(data[end + 'X'], end === 'start' ? 0 : 100, 0, 100),
+  clamp(data[end + 'X'], end === 'start' ? 0 : endXLimit, 0, end === 'start' ? 100 : endXLimit),
   clamp(data[end + 'Y'], 50, 0, 100) * 0.4,
 ];
 const pointsChanged = (previous, next) => next.some((point, index) =>
@@ -389,7 +395,7 @@ export function createWidget(name) {
           data[end + 'DockX'] = (target.snapX - target.rect.left) / target.rect.width * 100;
           data[end + 'DockY'] = (target.snapY - target.rect.top) / target.rect.height * 100;
         } else {
-          data[end + 'X'] = clamp(point[0], 50, 0, 100);
+          data[end + 'X'] = clamp(point[0], 50, 0, end === 'end' ? endXLimit : 100);
           data[end + 'Y'] = clamp(point[1] * 2.5, 50, 0, 100);
         }
         void context.changeProject({
@@ -518,6 +524,12 @@ export function createWidget(name) {
         const dashLength = clamp(data.animationDashLength, 8, 1, 100);
         const gapLength = clamp(data.animationGapLength, 5, 1, 100);
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
+        const baseDuration = clamp(data.duration, 1, 0.2, 20);
+        const speedByValue = data.speedByValue !== false && data.speedByValue !== 'false';
+        const reference = clamp(data.speedReference, 50, 0.01, 1000000000);
+        const duration = speedByValue && direction
+          ? Math.min(20, Math.max(0.2, baseDuration * reference / Math.abs(direction)))
+          : baseDuration;
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: 'visible',
           'data-ugso-line': '',
@@ -534,7 +546,7 @@ export function createWidget(name) {
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke',
               strokeDasharray: dashLength + ' ' + gapLength },
               h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: cycleOffset,
-                dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null,
+                dur: duration + 's', repeatCount: 'indefinite' })) : null,
             arrowStart ? arrow(points[0], points, true) : null,
             arrowEnd ? arrow(points[points.length - 1], points, false) : null),
           this.renderDockHandles(data),

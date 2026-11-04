@@ -157,7 +157,7 @@ export function createWidget(name) {
         if (!inverse || !id || id === this.props.id) return null;
         const waypoint = data[end + 'DockWaypoint'];
         if (waypoint) {
-          const screen = this.waypointOnScreen(this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]'), waypoint);
+          const screen = this.linePointOnScreen(this.dockTargetElement(id)?.querySelector('svg[data-ugso-line]'), waypoint);
           if (!screen) return null;
           const point = screen.matrixTransform(inverse);
           return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
@@ -191,12 +191,25 @@ export function createWidget(name) {
       return target?.widDiv ?? target?.refService?.current;
     }
 
-    waypointOnScreen(svg, index) {
+    linePointOnScreen(svg, index) {
       const coordinates = svg?.getAttribute('data-ugso-waypoint-' + index);
       const matrix = coordinates && svg.getScreenCTM();
       if (!matrix) return null;
       const [x, y] = coordinates.split(' ').map(Number);
       return new DOMPoint(x, y).matrixTransform(matrix);
+    }
+
+    canDockToLinePoint(widgets, id, point, sourceEnd) {
+      const visited = new Set([this.props.id + ':' + sourceEnd]);
+      while (point === 'start' || point === 'end') {
+        const key = id + ':' + point;
+        if (visited.has(key)) return false;
+        visited.add(key);
+        const data = widgets[id]?.data;
+        id = data?.[point + 'DockWidget'];
+        point = data?.[point + 'DockWaypoint'];
+      }
+      return true;
     }
 
     moveDockHandle(event) {
@@ -215,11 +228,12 @@ export function createWidget(name) {
         const line = element?.querySelector('svg[data-ugso-line]');
         const layer = hits.findIndex(element => element.id === id);
         if (line) {
-          for (const waypoint of [1, 2]) {
-            const point = this.waypointOnScreen(line, waypoint);
+          for (const waypoint of ['start', 'end', 1, 2]) {
+            const point = this.linePointOnScreen(line, waypoint);
             if (!point) continue;
             const distance = Math.hypot(x - point.x, y - point.y);
-            if (distance <= 12 && (!nearest?.waypoint || distance < nearest.distance)) {
+            if (distance <= 12 && (!nearest?.waypoint || distance < nearest.distance) &&
+                this.canDockToLinePoint(view.widgets, id, waypoint, drag.end)) {
               nearest = { id, waypoint, snapX: point.x, snapY: point.y, distance, layer };
             }
           }
@@ -364,6 +378,8 @@ export function createWidget(name) {
             (this.props.editMode && waypoints.length) ? 'visible' : undefined,
           visibility: hiddenInRuntime ? 'hidden' : undefined,
           'data-ugso-line': '',
+          'data-ugso-waypoint-start': [x1, y1].join(' '),
+          'data-ugso-waypoint-end': [x2, y2].join(' '),
           'data-ugso-waypoint-1': waypoints[0]?.join(' '),
           'data-ugso-waypoint-2': waypoints[1]?.join(' '),
           role: 'img', 'aria-label': label },

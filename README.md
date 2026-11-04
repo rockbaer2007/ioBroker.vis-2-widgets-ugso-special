@@ -7,7 +7,7 @@ Erster Teststand mit SVG-Line, SVG LineBox, SVG LineBox Math, Wert-Verbindung, W
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.14
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.15
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.
@@ -20,4 +20,4 @@ Wert-Verbindungen sind standardmäßig nur im Editor sichtbar. Unter **Darstellu
 
 Im rechten Eigenschaftenbereich gibt es Gruppen für Datenquelle, Linienführung, Darstellung, Animation, Konvertierung und Berechnung. Linien unterstützen gerade und rechtwinklige Verläufe mit frei einstellbaren Endpunkten innerhalb des Widgets. Beim Verlauf **Über Zwischenpunkt** kommen zwei Koordinaten für den Knick hinzu. Die Berechnung unterstützt Addition, Subtraktion, Multiplikation und Division. Der Konverter verarbeitet Zahlen, Text und Schaltwerte. Unter **Linienführung** lässt sich ein zweiter Zwischenpunkt mit eigenen X- und Y-Koordinaten einschalten. Widgetübergreifende Weitergabe von Rechenergebnissen und Dashboard-Einbettung sind für einen Folgestand vorgesehen.
 
-Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. Bei anderen UGSo-Linien rastet der Ring an einem roten Zwischenpunkt ein. Der Anschluss folgt dem Zwischenpunkt, wenn du dessen Koordinaten änderst. In der Runtime sind die Ringe und roten Markierungen ausgeblendet.
+Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. Bei anderen UGSo-Linien rastet der Ring am Start, am Ende oder an einem roten Zwischenpunkt ein. Der Anschluss folgt dem Zwischenpunkt, wenn du dessen Koordinaten änderst. In der Runtime sind die Ringe und roten Markierungen ausgeblendet.

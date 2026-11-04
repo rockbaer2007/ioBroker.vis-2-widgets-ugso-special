@@ -1,0 +1,1 @@
+import{t as e}from"./widget-7ZK-7p-K.js";var t=e(`ValueConnection`);export{t as default};

@@ -56,6 +56,17 @@ const routing = group('ugsoRouting', 'Linienführung', [
   numericField('endY', 'Ende Y (%)', 50, 0, 100),
   { ...numericField('viaX', 'Zwischenpunkt X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
   { ...numericField('viaY', 'Zwischenpunkt Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
+  field('secondWaypoint', 'checkbox', 'Zweiten Zwischenpunkt verwenden', {
+    default: false, hidden: 'data.route !== "waypoint"',
+  }),
+  {
+    ...numericField('via2X', 'Zweiter Zwischenpunkt X (%)', 75, 0, 100),
+    hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
+  },
+  {
+    ...numericField('via2Y', 'Zweiter Zwischenpunkt Y (%)', 75, 0, 100),
+    hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
+  },
 ]);
 const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
@@ -126,6 +137,9 @@ export function createWidget(name) {
         if (data.route === 'vertical-first') points.push([x1, y2]);
         if (data.route === 'waypoint') {
           points.push([clamp(data.viaX, 50, 0, 100), clamp(data.viaY, 25, 0, 100) * 0.4]);
+          if (data.secondWaypoint === true || data.secondWaypoint === 'true') {
+            points.push([clamp(data.via2X, 75, 0, 100), clamp(data.via2Y, 75, 0, 100) * 0.4]);
+          }
         }
         points.push([x2, y2]);
         const path = 'M ' + points.map(point => point.join(' ')).join(' L ');

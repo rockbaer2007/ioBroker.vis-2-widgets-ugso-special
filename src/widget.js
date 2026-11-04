@@ -24,7 +24,10 @@ const conversion = field('conversion', 'select', 'Konvertierung', {
 });
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
-const animated = field('animated', 'checkbox', 'Animation aktivieren', { default: false });
+const animated = field('animated', 'checkbox', 'Animation aktivieren', {
+  default: false,
+  tooltip: 'Ohne Datenpunkt läuft die Animation vorwärts. Ein Datenpunkt kann sie anhalten oder umkehren.',
+});
 const group = (name, label, fields) => ({ name, label, fields });
 const source = group('ugsoSource', 'Datenquelle', [input]);
 const arithmetic = group('ugsoCalculation', 'Berechnung', [operation]);
@@ -133,7 +136,7 @@ export function createWidget(name) {
       if (name === 'SvgLine' || name === 'ValueConnection') {
         const direction = number(value);
         const active = (data.animated === true || data.animated === 'true') &&
-          (value === true || (direction !== null && direction !== 0));
+          (!data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0));
         const width = clamp(data.lineWidth, 3, 1, 40);
         const x1 = clamp(data.startX, 0, 0, 100);
         const y1 = clamp(data.startY, 50, 0, 100) * 0.4;
@@ -157,11 +160,11 @@ export function createWidget(name) {
           overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
             h('path', { d: path, stroke, strokeWidth: width,
-              fill: 'none', vectorEffect: 'non-scaling-stroke',
+              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke',
               markerStart: arrowStart ? markerUrl : undefined,
               markerEnd: arrowEnd ? markerUrl : undefined }),
             active ? h('path', { d: path, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
-              fill: 'none', vectorEffect: 'non-scaling-stroke', strokeDasharray: '8 5' },
+              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', strokeDasharray: '8 5' },
               h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
                 dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null),
           name === 'ValueConnection' && value != null

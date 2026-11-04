@@ -7,14 +7,14 @@ Erster Teststand mit SVG-Line, SVG LineBox, SVG LineBox Math, Wert-Verbindung, W
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.7
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.8
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.
 
 ## Umfang des Teststands
 
-Unter **Darstellung** lassen sich Pfeilspitzen am Anfang und am Ende getrennt einschalten. Sie übernehmen die Linienfarbe. Bei SVG-Line legt **Animation → Bewegte Farbe** die zweite Farbe für das bewegte Strichmuster fest.
+Unter **Darstellung** lassen sich Pfeilspitzen am Anfang und am Ende getrennt einschalten. Sie übernehmen die Linienfarbe. Bei SVG-Line legt **Animation → Bewegte Farbe** die zweite Farbe für das bewegte Strichmuster fest. Ohne Datenpunkt läuft die eingeschaltete Animation vorwärts. Mit Datenpunkt bestimmen dessen Wert und Vorzeichen, ob und in welche Richtung sie läuft.
 
 Wert-Verbindungen sind standardmäßig nur im Editor sichtbar. Unter **Darstellung → In Runtime anzeigen** lässt sich die Linie auch für die Runtime einschalten.
 

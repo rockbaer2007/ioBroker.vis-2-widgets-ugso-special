@@ -1,27 +1,53 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-spezial",
-    "version": "0.1.29",
+    "version": "0.1.30",
+    "news": {
+      "0.1.30": {
+        "en": "Prepare for the ioBroker adapter catalogue.",
+        "de": "Aufnahme in den ioBroker-Adapterkatalog vorbereiten."
+      }
+    },
     "icon": "ugso-spezial.svg",
     "extIcon": "https://raw.githubusercontent.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/main/admin/ugso-spezial.svg",
-    "title": "UGSo Spezial",
+    "tier": 3,
+    "keywords": ["visualization", "vis-2", "svg"],
     "titleLang": {
       "en": "UGSo Spezial",
-      "de": "UGSo Spezial"
+      "de": "UGSo Spezial",
+      "ru": "UGSo Spezial",
+      "pt": "UGSo Spezial",
+      "nl": "UGSo Spezial",
+      "fr": "UGSo Spezial",
+      "it": "UGSo Spezial",
+      "es": "UGSo Spezial",
+      "pl": "UGSo Spezial",
+      "uk": "UGSo Spezial",
+      "zh-cn": "UGSo Spezial"
     },
     "desc": {
       "de": "SVG-Linie und SVG-Wertbox für VIS 2",
-      "en": "SVG line and value box for VIS 2"
+      "en": "SVG line and summing node for VIS 2",
+      "ru": "SVG-линия и узел суммирования для VIS 2",
+      "pt": "Linha SVG e nó de soma para VIS 2",
+      "nl": "SVG-lijn en somknooppunt voor VIS 2",
+      "fr": "Ligne SVG et nœud de somme pour VIS 2",
+      "it": "Linea SVG e nodo di somma per VIS 2",
+      "es": "Línea SVG y nodo de suma para VIS 2",
+      "pl": "Linia SVG i węzeł sumujący dla VIS 2",
+      "uk": "Лінія SVG і вузол підсумовування для VIS 2",
+      "zh-cn": "适用于 VIS 2 的 SVG 线条和求和节点"
     },
+    "author": "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>",
     "authors": [
-      "UGSo-Software"
+      "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>"
     ],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
     },
     "platform": "Javascript/Node.js",
-    "mode": "once",
+    "mode": "none",
     "enabled": true,
     "onlyWWW": true,
     "adminUI": {
@@ -33,9 +59,11 @@
     "dependencies": [
       "vis-2"
     ],
+    "restartAdapters": ["vis-2"],
     "visWidgets": {
       "ugsoSpezial": {
         "name": "ugsoSpezial",
+        "i18n": false,
         "url": "vis-2-widgets-ugso-spezial/customWidgets.js",
         "bundlerType": "module",
         "components": [

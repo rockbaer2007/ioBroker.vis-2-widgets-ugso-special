@@ -1,31 +1,31 @@
-# UGSo Spezial für ioBroker VIS 2
+# ioBroker.vis-2-widgets-ugso-spezial
 
-In der Widget-Auswahl stehen **SVG-Line** und **SVG LineBox** zur Verfügung. SVG-Line liest einen ioBroker-Datenpunkt. SVG LineBox ist ein runder Dockpunkt mit einstellbarem Durchmesser in Pixeln.
+UGSo Spezial adds animated SVG lines and summing nodes to ioBroker VIS 2. [German documentation](README.de.md)
 
-Wähle die Linien in der LineBox unter **Ein- und Ausgänge** aus. Die Auswahl steuert die Wertübergabe auch bei Linien mit Pfeil. Das Andocken dient der Positionierung. Bis zu vier Eingangslinien liefern Zahlenwerte. Ein optionaler numerischer **Korrekturwert** wird addiert, negative Werte werden entsprechend abgezogen. Die Summe erscheint im Tooltip. Bis zu zwei Ausgangslinien übernehmen dieselbe Summe. Bei eingeschalteter Animation läuft sie bei positiven Werten vorwärts, bei negativen rückwärts und stoppt bei null oder fehlender Summe. Bestehende LineBoxen brauchen eine Auswahl ihrer Eingänge.
+## Installation
 
-Als **Summen-Datenpunkt** kannst du einen vorhandenen, beschreibbaren Zahlendatenpunkt unter `0_userdata.0` auswählen. Die VIS-Runtime schreibt die Summe dorthin. Wähle für die Korrektur und für den Ausgang verschiedene Datenpunkte. Fehlt ein gewählter Eingangswert, wird keine Teilsumme ausgegeben.
+For testing, enable expert mode in ioBroker Admin and select **Install from URL** on the Adapters page. Enter the [version 0.1.30 archive URL](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.30) as a custom URL. Reload the VIS 2 editor and open **UGSo Spezial** in the widget palette.
 
-Seit 0.1.18 enthält das Paket nur diese beiden Widgets. Ersetze die vier früheren Widget-Typen in vorhandenen Projekten vor dem Update oder verwende für diese Projekte weiter 0.1.17.
+## Widgets
 
-Die freie X-Position des Linienendes reicht bei **Gerade** und **Senkrecht, dann waagerecht** bis 100 %, bei anderen Verläufen bis 95 %. Unter **Animation → Animationsgeschwindigkeit** stehen **Fest** und **Nach Eingangswert** zur Auswahl. Bei **Fest** gilt die eingestellte Zyklusdauer. Bei **Nach Eingangswert** steuert der Betrag des Datenwerts das Tempo. Beim Referenzwert (standardmäßig 50) gilt die eingestellte Zyklusdauer. Die Zyklusdauer bleibt zwischen 0,2 und 20 Sekunden.
+- **SVG-Line** reads an ioBroker state and draws a straight, right-angle or waypoint route. Configure the arrowheads, colours, dash lengths and cycle duration. A positive value animates forward, a negative value reverses direction and zero stops the animation. Speed can be fixed or proportional to the absolute input value.
+- **SVG LineBox** is a circular node. Select up to four input lines and two output lines. The node sums the input values and an optional correction state, then passes the total to the output lines. It can also write the total in the VIS runtime to an existing writable numeric state under `0_userdata.0`. A missing selected input blocks the total until it becomes available.
 
-## Installation über GitHub
+In the editor, drag a yellow endpoint handle to snap a line to a node or another line. A line with an arrowhead cannot use that endpoint for visual docking. LineBox input and output selection controls value routing independently of docking.
 
-In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
+## Changelog
 
-```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.29
-```
+### 0.1.30
 
-Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.
+- Prepare adapter metadata and automated VIS 2 installation tests for the ioBroker catalogue.
+- Restart VIS 2 after installing widget updates so it picks up the new bundle.
 
-## Umfang des Teststands
+### 0.1.29
 
-Unter **Darstellung** lassen sich Pfeilspitzen am Anfang und am Ende getrennt einschalten. Die Pfeilgröße ist einstellbar. Die Pfeilspitzen übernehmen die Linienfarbe und liegen über dem bewegten Strichmuster. Bei SVG-Line legt **Animation → Bewegte Farbe** die zweite Farbe für das bewegte Strichmuster fest. Die Länge der bewegten Farbe und die Länge der sichtbaren Grundfarbe dazwischen lassen sich separat einstellen. **Animation → Animation testen** erzwingt die Vorschau im Editor. Ohne Datenpunkt läuft die eingeschaltete Animation vorwärts. Mit Datenpunkt bestimmen dessen Wert und Vorzeichen, ob und in welche Richtung sie läuft.
+- Add the set icon and improve palette label contrast.
 
-Die Pfeilspitze sitzt am Linienendpunkt. Der Strich und die Animation enden an der Basis des Pfeils. Das Ende ist dann als Dockpunkt deaktiviert. Eine gespeicherte Verbindung wird beim Abschalten des Pfeils wieder aktiv.
+## License
 
-Linien unterstützen gerade und rechtwinklige Verläufe mit frei einstellbaren Endpunkten innerhalb des Widgets. Beim Verlauf **Über Zwischenpunkt** lässt sich ein zweiter Zwischenpunkt mit eigenen X- und Y-Koordinaten einschalten.
+MIT License. See [LICENSE](LICENSE).
 
-Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. Bei anderen UGSo-Linien rastet der Ring am Start, am Ende oder an einem roten Zwischenpunkt ein. Der Anschluss folgt dem Zwischenpunkt, wenn du dessen Koordinaten änderst. In der Runtime sind die Ringe und roten Markierungen ausgeblendet.
+Copyright (c) 2026 UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>

@@ -1,14 +1,23 @@
 {
   "name": "iobroker.vis-2-widgets-ugso-spezial",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "description": "UGSo Spezial for ioBroker VIS 2",
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "test": "mocha test/widgets.test.cjs"
   },
-  "keywords": [],
+  "author": "UGSo-Software <51380789+rockbaer2007@users.noreply.github.com>",
+  "keywords": [
+    "ioBroker",
+    "vis-2",
+    "svg",
+    "visualization"
+  ],
   "type": "module",
   "devDependencies": {
+    "@iobroker/vis-2-widgets-testing": "^2.0.1",
     "@module-federation/vite": "1.23.9",
+    "mocha": "^11.8.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "vite": "8.3.5"

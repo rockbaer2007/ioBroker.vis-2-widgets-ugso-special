@@ -9,7 +9,7 @@ const input = field('oid', 'id', 'Datenpunkt A');
 const unit = field('unit', 'text', 'Einheit');
 const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
 const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
-const endXLimit = route => !route || route === 'straight' ? 100 : 95;
+const endXLimit = route => !route || route === 'straight' || route === 'vertical-first' ? 100 : 95;
 const animated = field('animated', 'checkbox', 'Animation aktivieren', {
   default: false,
   tooltip: 'Ohne Datenpunkt läuft die Animation vorwärts. Ein Datenpunkt kann sie anhalten oder umkehren.',
@@ -44,7 +44,7 @@ const routing = group('ugsoRouting', 'Linienführung', [
   numericField('startY', 'Start Y (%)', 50, 0, 100),
   {
     ...numericField('endX', 'Ende X (%)', 100, 0, 100),
-    tooltip: 'Gerade Linien reichen bis 100 %. Andere Verläufe enden spätestens bei 95 %.',
+    tooltip: 'Bei „Gerade“ und „Senkrecht, dann waagerecht“ sind 100 % möglich. Sonst gilt 95 %.',
     onChange: (_field, data, changeData) => {
       const limit = endXLimit(data.route);
       if (number(data.endX) > limit) {

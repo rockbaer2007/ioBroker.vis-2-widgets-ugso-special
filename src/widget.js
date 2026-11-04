@@ -81,6 +81,8 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
   field('animationFlowColor', 'color', 'Bewegte Farbe', { default: '#ffffff' }),
+  numericField('animationDashLength', 'Länge der bewegten Farbe', 8, 1, 100),
+  numericField('animationGapLength', 'Länge der Grundfarbe', 5, 1, 100),
   field('testAnimation', 'checkbox', 'Animation testen', {
     default: false,
     tooltip: 'Zeigt die Animation im Editor auch bei ausgeschalteter Animation oder stehendem Datenpunkt.',
@@ -163,6 +165,9 @@ export function createWidget(name) {
         const arrowStart = data.arrowAtStart === true || data.arrowAtStart === 'true';
         const arrowEnd = data.arrowAtEnd === true || data.arrowAtEnd === 'true';
         const arrowSize = clamp(data.arrowSize, 5, 2, 20);
+        const dashLength = clamp(data.animationDashLength, 8, 1, 100);
+        const gapLength = clamp(data.animationGapLength, 5, 1, 100);
+        const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
@@ -170,8 +175,9 @@ export function createWidget(name) {
             h('path', { d: path, stroke, strokeWidth: width,
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
             active ? h('path', { d: path, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
-              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', strokeDasharray: '8 5' },
-              h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
+              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke',
+              strokeDasharray: dashLength + ' ' + gapLength },
+              h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: cycleOffset,
                 dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null,
             arrowStart || arrowEnd ? h('path', {
               d: path, fill: 'none', stroke: 'none', strokeWidth: width, vectorEffect: 'non-scaling-stroke',

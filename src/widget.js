@@ -72,6 +72,14 @@ const routing = group('ugsoRouting', 'Linienführung', [
     hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
   },
 ]);
+const docking = group('ugsoDocking', 'Dockpunkte', [
+  field('startDockWidget', 'widget', 'Zielwidget am Start'),
+  numericField('startDockX', 'Start im Zielwidget X (%)', 50, 0, 100),
+  numericField('startDockY', 'Start im Zielwidget Y (%)', 50, 0, 100),
+  field('endDockWidget', 'widget', 'Zielwidget am Ende'),
+  numericField('endDockX', 'Ende im Zielwidget X (%)', 50, 0, 100),
+  numericField('endDockY', 'Ende im Zielwidget Y (%)', 50, 0, 100),
+]);
 const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
   field('arrowAtStart', 'checkbox', 'Pfeil am Anfang', { default: false }),
@@ -94,10 +102,10 @@ const boxStyle = group('ugsoDisplay', 'Darstellung', [color, unit, decimals]);
 const clamp = (value, fallback, min, max) => Math.min(max, Math.max(min, number(value) ?? fallback));
 
 const definitions = {
-  SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
+  SvgLine: ['SVG-Line', [source, routing, docking, lineStyle, animation]],
   LineBox: ['SVG LineBox', [source, boxStyle]],
   LineBoxMath: ['SVG LineBox Math', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, boxStyle]],
-  ValueConnection: ['Wert-Verbindung', [source, routing, {
+  ValueConnection: ['Wert-Verbindung', [source, routing, docking, {
     ...lineStyle,
     fields: [...lineStyle.fields, field('showInRuntime', 'checkbox', 'In Runtime anzeigen', { default: false })],
   }]],
@@ -109,6 +117,59 @@ export function createWidget(name) {
   const [label, groups] = definitions[name];
   return class UgsoWidget extends window.visRxWidget {
     lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
+    lineSvg = React.createRef();
+    dockPoints = [null, null];
+    dockFrame = null;
+
+    componentDidMount() {
+      super.componentDidMount();
+      this.scheduleDockUpdate();
+    }
+
+    componentDidUpdate(...args) {
+      super.componentDidUpdate(...args);
+      this.scheduleDockUpdate();
+    }
+
+    componentWillUnmount() {
+      if (this.dockFrame !== null) cancelAnimationFrame(this.dockFrame);
+      super.componentWillUnmount();
+    }
+
+    scheduleDockUpdate() {
+      const data = this.state.rxData ?? {};
+      if (!this.lineSvg.current || !(data.startDockWidget || data.endDockWidget)) {
+        this.dockPoints = [null, null];
+        return;
+      }
+      if (this.dockFrame === null) this.dockFrame = requestAnimationFrame(this.updateDockPoints);
+    }
+
+    updateDockPoints = () => {
+      this.dockFrame = null;
+      const svg = this.lineSvg.current;
+      if (!svg) return;
+      const data = this.state.rxData ?? {};
+      const inverse = svg.getScreenCTM()?.inverse();
+      const points = ['start', 'end'].map(end => {
+        const id = data[end + 'DockWidget'];
+        if (!inverse || !id || id === this.props.id) return null;
+        const target = this.props.askView?.('getRef', { id });
+        const element = target?.widDiv ?? target?.refService?.current;
+        const rect = element?.getBoundingClientRect();
+        if (!rect?.width || !rect.height) return null;
+        const x = rect.left + rect.width * clamp(data[end + 'DockX'], 50, 0, 100) / 100;
+        const y = rect.top + rect.height * clamp(data[end + 'DockY'], 50, 0, 100) / 100;
+        const point = new DOMPoint(x, y).matrixTransform(inverse);
+        return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
+      });
+      if (points.some((point, index) =>
+        point?.[0] !== this.dockPoints[index]?.[0] || point?.[1] !== this.dockPoints[index]?.[1])) {
+        this.dockPoints = points;
+        this.forceUpdate();
+      }
+      this.scheduleDockUpdate();
+    };
 
     static getWidgetInfo() {
       return {
@@ -147,10 +208,10 @@ export function createWidget(name) {
         const active = testAnimation || (data.animated === true || data.animated === 'true') &&
           (!data.oid || convert(value, 'boolean') === true || (direction !== null && direction !== 0));
         const width = clamp(data.lineWidth, 3, 1, 40);
-        const x1 = clamp(data.startX, 0, 0, 100);
-        const y1 = clamp(data.startY, 50, 0, 100) * 0.4;
-        const x2 = clamp(data.endX, 100, 0, 100);
-        const y2 = clamp(data.endY, 50, 0, 100) * 0.4;
+        const startDock = data.startDockWidget ? this.dockPoints[0] : null;
+        const endDock = data.endDockWidget ? this.dockPoints[1] : null;
+        const [x1, y1] = startDock ?? [clamp(data.startX, 0, 0, 100), clamp(data.startY, 50, 0, 100) * 0.4];
+        const [x2, y2] = endDock ?? [clamp(data.endX, 100, 0, 100), clamp(data.endY, 50, 0, 100) * 0.4];
         const points = [[x1, y1]];
         if (data.route === 'horizontal-first') points.push([x2, y1]);
         if (data.route === 'vertical-first') points.push([x1, y2]);
@@ -169,8 +230,8 @@ export function createWidget(name) {
         const gapLength = clamp(data.animationGapLength, 5, 1, 100);
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
-        return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
-          overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
+        return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
+          overflow: arrowStart || arrowEnd || startDock || endDock ? 'visible' : undefined, role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
             h('path', { d: path, stroke, strokeWidth: width,
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
@@ -189,7 +250,12 @@ export function createWidget(name) {
           arrowStart || arrowEnd ? h('defs', null,
             h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
               markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
-            h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null);
+            h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null,
+          this.props.editMode ? [startDock, endDock].map((point, index) => point && h('path', {
+            key: index, d: `M ${point.join(' ')} l 0 0`, fill: 'none',
+            stroke: index === 0 ? '#22c55e' : '#f59e0b', strokeWidth: 10,
+            strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke', pointerEvents: 'none',
+          })) : null);
       }
 
       let result = value;

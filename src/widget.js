@@ -463,6 +463,10 @@ export function createWidget(name) {
       const stroke = data.color || '#38bdf8';
 
       if (name === 'SvgLine') {
+        // VIS clips the outer widget by default. Strokes and arrows can cross its bounds.
+        delete props.style.overflow;
+        props.style.overflowX = 'visible';
+        props.style.overflowY = 'visible';
         const rawDirection = number(value);
         const direction = this.fromNode ? this.outputValue : rawDirection;
         const testAnimation = this.props.editMode &&

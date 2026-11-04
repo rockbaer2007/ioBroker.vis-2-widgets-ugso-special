@@ -8,14 +8,14 @@ Als **Summen-Datenpunkt** kannst du einen vorhandenen, beschreibbaren Zahlendate
 
 Seit 0.1.18 enthält das Paket nur diese beiden Widgets. Ersetze die vier früheren Widget-Typen in vorhandenen Projekten vor dem Update oder verwende für diese Projekte weiter 0.1.17.
 
-Die freie X-Position des Linienendes ist auf 95 % begrenzt. Unter **Animation → Geschwindigkeit nach Wert** steuert der Betrag des Datenwerts das Tempo. Beim Referenzwert gilt die eingestellte Zyklusdauer. Der Standardwert ist 50. Die Zyklusdauer bleibt zwischen 0,2 und 20 Sekunden. Bei abgeschalteter Option gilt die feste Zyklusdauer.
+Die freie X-Position des Linienendes ist auf 95 % begrenzt. Unter **Animation → Animationsgeschwindigkeit** stehen **Fest** und **Nach Eingangswert** zur Auswahl. Bei **Fest** gilt die eingestellte Zyklusdauer. Bei **Nach Eingangswert** steuert der Betrag des Datenwerts das Tempo. Beim Referenzwert (standardmäßig 50) gilt die eingestellte Zyklusdauer. Die Zyklusdauer bleibt zwischen 0,2 und 20 Sekunden.
 
 ## Installation über GitHub
 
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.24
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.25
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.

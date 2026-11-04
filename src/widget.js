@@ -65,7 +65,13 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
-  field('speedByValue', 'checkbox', 'Geschwindigkeit nach Wert', { default: true }),
+  field('speedByValue', 'select', 'Animationsgeschwindigkeit', {
+    default: 'true',
+    options: [
+      { value: 'false', label: 'Fest' },
+      { value: 'true', label: 'Nach Eingangswert' },
+    ],
+  }),
   { ...numericField('speedReference', 'Referenzwert für Zyklusdauer', 50, 0.01, 1000000000, 0.01),
     hidden: 'data.speedByValue === false || data.speedByValue === "false"',
     tooltip: 'Beim Referenzwert gilt die eingestellte Zyklusdauer. Doppelte Werte laufen doppelt so schnell.',

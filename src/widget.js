@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { calculate, convert, number } from './logic.js';
 
 const h = React.createElement;
@@ -72,14 +73,6 @@ const routing = group('ugsoRouting', 'Linienführung', [
     hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
   },
 ]);
-const docking = group('ugsoDocking', 'Dockpunkte', [
-  field('startDockWidget', 'widget', 'Zielwidget am Start'),
-  numericField('startDockX', 'Start im Zielwidget X (%)', 50, 0, 100),
-  numericField('startDockY', 'Start im Zielwidget Y (%)', 50, 0, 100),
-  field('endDockWidget', 'widget', 'Zielwidget am Ende'),
-  numericField('endDockX', 'Ende im Zielwidget X (%)', 50, 0, 100),
-  numericField('endDockY', 'Ende im Zielwidget Y (%)', 50, 0, 100),
-]);
 const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
   field('arrowAtStart', 'checkbox', 'Pfeil am Anfang', { default: false }),
@@ -100,12 +93,19 @@ const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)
 const textStyle = group('ugsoDisplay', 'Darstellung', [unit, decimals]);
 const boxStyle = group('ugsoDisplay', 'Darstellung', [color, unit, decimals]);
 const clamp = (value, fallback, min, max) => Math.min(max, Math.max(min, number(value) ?? fallback));
+const ends = ['start', 'end'];
+const freePoint = (data, end) => [
+  clamp(data[end + 'X'], end === 'start' ? 0 : 100, 0, 100),
+  clamp(data[end + 'Y'], 50, 0, 100) * 0.4,
+];
+const pointsChanged = (previous, next) => next.some((point, index) =>
+  point?.[0] !== previous[index]?.[0] || point?.[1] !== previous[index]?.[1]);
 
 const definitions = {
-  SvgLine: ['SVG-Line', [source, routing, docking, lineStyle, animation]],
+  SvgLine: ['SVG-Line', [source, routing, lineStyle, animation]],
   LineBox: ['SVG LineBox', [source, boxStyle]],
   LineBoxMath: ['SVG LineBox Math', [group('ugsoSource', 'Datenquellen', [input, second]), arithmetic, boxStyle]],
-  ValueConnection: ['Wert-Verbindung', [source, routing, docking, {
+  ValueConnection: ['Wert-Verbindung', [source, routing, {
     ...lineStyle,
     fields: [...lineStyle.fields, field('showInRuntime', 'checkbox', 'In Runtime anzeigen', { default: false })],
   }]],
@@ -119,7 +119,9 @@ export function createWidget(name) {
     lineMarkerId = 'ugso-line-arrow-' + ++nextLineMarkerId;
     lineSvg = React.createRef();
     dockPoints = [null, null];
+    dockHandles = [null, null];
     dockFrame = null;
+    dockDrag = null;
 
     componentDidMount() {
       super.componentDidMount();
@@ -138,10 +140,8 @@ export function createWidget(name) {
 
     scheduleDockUpdate() {
       const data = this.state.rxData ?? {};
-      if (!this.lineSvg.current || !(data.startDockWidget || data.endDockWidget)) {
-        this.dockPoints = [null, null];
-        return;
-      }
+      if (!this.lineSvg.current ||
+          !(data.startDockWidget || data.endDockWidget || this.showDockHandles())) return;
       if (this.dockFrame === null) this.dockFrame = requestAnimationFrame(this.updateDockPoints);
     }
 
@@ -150,26 +150,125 @@ export function createWidget(name) {
       const svg = this.lineSvg.current;
       if (!svg) return;
       const data = this.state.rxData ?? {};
-      const inverse = svg.getScreenCTM()?.inverse();
-      const points = ['start', 'end'].map(end => {
+      const matrix = svg.getScreenCTM();
+      const inverse = matrix?.inverse();
+      const points = ends.map(end => {
         const id = data[end + 'DockWidget'];
         if (!inverse || !id || id === this.props.id) return null;
-        const target = this.props.askView?.('getRef', { id });
-        const element = target?.widDiv ?? target?.refService?.current;
-        const rect = element?.getBoundingClientRect();
+        const rect = this.dockTargetRect(id);
         if (!rect?.width || !rect.height) return null;
         const x = rect.left + rect.width * clamp(data[end + 'DockX'], 50, 0, 100) / 100;
         const y = rect.top + rect.height * clamp(data[end + 'DockY'], 50, 0, 100) / 100;
         const point = new DOMPoint(x, y).matrixTransform(inverse);
         return Number.isFinite(point.x) && Number.isFinite(point.y) ? [point.x, point.y] : null;
       });
-      if (points.some((point, index) =>
-        point?.[0] !== this.dockPoints[index]?.[0] || point?.[1] !== this.dockPoints[index]?.[1])) {
-        this.dockPoints = points;
-        this.forceUpdate();
-      }
+      const handles = ends.map((end, index) => {
+        if (!matrix || (!this.showDockHandles() && !(this.props.editMode && points[index]))) return null;
+        const local = this.dockDrag?.end === end ? this.dockDrag.point : points[index] ?? freePoint(data, end);
+        const screen = new DOMPoint(...local).matrixTransform(matrix);
+        return [screen.x, screen.y];
+      });
+      const changed = pointsChanged(this.dockPoints, points) || pointsChanged(this.dockHandles, handles);
+      this.dockPoints = points;
+      this.dockHandles = handles;
+      if (changed) this.forceUpdate();
       this.scheduleDockUpdate();
     };
+
+    showDockHandles() {
+      return this.props.editMode && this.props.selectedWidgets?.includes(this.props.id);
+    }
+
+    dockTargetRect(id) {
+      const target = this.props.askView?.('getRef', { id });
+      const element = target?.widDiv ?? target?.refService?.current;
+      return element?.getBoundingClientRect();
+    }
+
+    moveDockHandle(event) {
+      const drag = this.dockDrag;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      event.stopPropagation();
+      const inverse = this.lineSvg.current?.getScreenCTM()?.inverse();
+      if (!inverse) return;
+      const { clientX: x, clientY: y } = event;
+      const view = this.props.context?.views?.[this.props.view];
+      const hits = document.elementsFromPoint(x, y);
+      let nearest = null;
+      for (const id of Object.keys(view?.widgets ?? {})) {
+        if (id === this.props.id) continue;
+        const rect = this.dockTargetRect(id);
+        if (!rect?.width || !rect.height) continue;
+        const snapX = Math.max(rect.left, Math.min(rect.right, x));
+        const snapY = Math.max(rect.top, Math.min(rect.bottom, y));
+        const distance = Math.hypot(x - snapX, y - snapY);
+        const layer = hits.findIndex(element => element.id === id);
+        if (distance > 12 || (nearest && (distance > nearest.distance ||
+            (distance === nearest.distance && (layer < 0 || (nearest.layer >= 0 && layer >= nearest.layer)))))) continue;
+        nearest = { id, rect, snapX, snapY, distance, layer };
+      }
+      const local = new DOMPoint(nearest?.snapX ?? x, nearest?.snapY ?? y).matrixTransform(inverse);
+      if (!Number.isFinite(local.x) || !Number.isFinite(local.y)) return;
+      drag.target = nearest;
+      drag.point = [local.x, local.y];
+      this.forceUpdate();
+    }
+
+    finishDockHandle(event, save) {
+      if (this.dockDrag?.pointerId !== event.pointerId) return;
+      event.stopPropagation();
+      const { end, target, point } = this.dockDrag;
+      this.dockDrag = null;
+      const { context, view, id } = this.props;
+      const project = context?.views;
+      const current = project?.[view]?.widgets?.[id];
+      if (save && point && current && context.changeProject) {
+        const data = { ...current.data, [end + 'DockWidget']: target?.id ?? '' };
+        if (target) {
+          data[end + 'DockX'] = (target.snapX - target.rect.left) / target.rect.width * 100;
+          data[end + 'DockY'] = (target.snapY - target.rect.top) / target.rect.height * 100;
+        } else {
+          data[end + 'X'] = clamp(point[0], 50, 0, 100);
+          data[end + 'Y'] = clamp(point[1] * 2.5, 50, 0, 100);
+        }
+        void context.changeProject({
+          ...project,
+          [view]: { ...project[view], widgets: { ...project[view].widgets, [id]: { ...current, data } } },
+        });
+      }
+      this.forceUpdate();
+    }
+
+    renderDockHandles(data) {
+      if (!this.props.editMode || !this.dockHandles.some(Boolean)) return null;
+      const selected = this.showDockHandles();
+      return createPortal(this.dockHandles.map((point, index) => {
+        const end = ends[index];
+        if (!point || (!selected && !data[end + 'DockWidget'])) return null;
+        return h('span', {
+          key: end,
+          title: index === 0 ? 'Startpunkt ziehen' : 'Endpunkt ziehen',
+          style: {
+            position: 'fixed', left: point[0], top: point[1], width: 14, height: 14,
+            boxSizing: 'border-box', border: '2px solid #ffdf32', borderRadius: '50%',
+            transform: 'translate(-50%, -50%)', zIndex: 1300,
+            cursor: 'grab', touchAction: 'none', pointerEvents: selected ? 'auto' : 'none',
+          },
+          onPointerDown: event => {
+            if (!selected || event.button !== 0 || this.dockDrag) return;
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.setPointerCapture(event.pointerId);
+            this.dockDrag = { end, pointerId: event.pointerId };
+          },
+          onPointerMove: event => this.moveDockHandle(event),
+          onPointerUp: event => this.finishDockHandle(event, true),
+          onPointerCancel: event => this.finishDockHandle(event, false),
+          onLostPointerCapture: event => this.finishDockHandle(event, false),
+          onClick: event => event.stopPropagation(),
+        });
+      }), document.body);
+    }
 
     static getWidgetInfo() {
       return {
@@ -210,8 +309,8 @@ export function createWidget(name) {
         const width = clamp(data.lineWidth, 3, 1, 40);
         const startDock = data.startDockWidget ? this.dockPoints[0] : null;
         const endDock = data.endDockWidget ? this.dockPoints[1] : null;
-        const [x1, y1] = startDock ?? [clamp(data.startX, 0, 0, 100), clamp(data.startY, 50, 0, 100) * 0.4];
-        const [x2, y2] = endDock ?? [clamp(data.endX, 100, 0, 100), clamp(data.endY, 50, 0, 100) * 0.4];
+        const [x1, y1] = (this.dockDrag?.end === 'start' && this.dockDrag.point) || startDock || freePoint(data, 'start');
+        const [x2, y2] = (this.dockDrag?.end === 'end' && this.dockDrag.point) || endDock || freePoint(data, 'end');
         const points = [[x1, y1]];
         if (data.route === 'horizontal-first') points.push([x2, y1]);
         if (data.route === 'vertical-first') points.push([x1, y2]);
@@ -231,7 +330,8 @@ export function createWidget(name) {
         const cycleOffset = (dashLength + gapLength) * (direction < 0 ? 1 : -1);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { ref: this.lineSvg, width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
-          overflow: arrowStart || arrowEnd || startDock || endDock ? 'visible' : undefined, role: 'img', 'aria-label': label },
+          overflow: arrowStart || arrowEnd || startDock || endDock || this.dockDrag ? 'visible' : undefined,
+          role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
             h('path', { d: path, stroke, strokeWidth: width,
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
@@ -251,11 +351,7 @@ export function createWidget(name) {
             h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
               markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
             h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null,
-          this.props.editMode ? [startDock, endDock].map((point, index) => point && h('path', {
-            key: index, d: `M ${point.join(' ')} l 0 0`, fill: 'none',
-            stroke: index === 0 ? '#22c55e' : '#f59e0b', strokeWidth: 10,
-            strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke', pointerEvents: 'none',
-          })) : null);
+          this.renderDockHandles(data));
       }
 
       let result = value;

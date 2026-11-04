@@ -7,7 +7,7 @@ Erster Teststand mit SVG-Line, SVG LineBox, SVG LineBox Math, Wert-Verbindung, W
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.12
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.13
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.
@@ -20,4 +20,4 @@ Wert-Verbindungen sind standardmäßig nur im Editor sichtbar. Unter **Darstellu
 
 Im rechten Eigenschaftenbereich gibt es Gruppen für Datenquelle, Linienführung, Darstellung, Animation, Konvertierung und Berechnung. Linien unterstützen gerade und rechtwinklige Verläufe mit frei einstellbaren Endpunkten innerhalb des Widgets. Beim Verlauf **Über Zwischenpunkt** kommen zwei Koordinaten für den Knick hinzu. Die Berechnung unterstützt Addition, Subtraktion, Multiplikation und Division. Der Konverter verarbeitet Zahlen, Text und Schaltwerte. Unter **Linienführung** lässt sich ein zweiter Zwischenpunkt mit eigenen X- und Y-Koordinaten einschalten. Widgetübergreifende Weitergabe von Rechenergebnissen und Dashboard-Einbettung sind für einen Folgestand vorgesehen.
 
-Unter **Dockpunkte** lassen sich Start und Ende separat mit einem Widget derselben Seite verbinden. X und Y werden in Prozent der Zielgröße angegeben. 50 % / 50 % liegt in der Mitte. Ein leerer Zieleintrag verwendet den freien Punkt aus **Linienführung**. Grün markiert den Start und Orange das Ende im Editor.
+Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. In der Runtime sind die Ringe ausgeblendet.

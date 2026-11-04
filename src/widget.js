@@ -76,6 +76,7 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
+  field('animationFlowColor', 'color', 'Bewegte Farbe', { default: '#ffffff' }),
 ]);
 const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)', -1, -1, 10);
 const textStyle = group('ugsoDisplay', 'Darstellung', [unit, decimals]);
@@ -131,7 +132,8 @@ export function createWidget(name) {
 
       if (name === 'SvgLine' || name === 'ValueConnection') {
         const direction = number(value);
-        const active = data.animated && (value === true || (direction !== null && direction !== 0));
+        const active = (data.animated === true || data.animated === 'true') &&
+          (value === true || (direction !== null && direction !== 0));
         const width = clamp(data.lineWidth, 3, 1, 40);
         const x1 = clamp(data.startX, 0, 0, 100);
         const y1 = clamp(data.startY, 50, 0, 100) * 0.4;
@@ -153,13 +155,15 @@ export function createWidget(name) {
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
-          h('path', { d: path, stroke, strokeWidth: width,
-            fill: 'none', opacity: clamp(data.opacity, 100, 0, 100) / 100, vectorEffect: 'non-scaling-stroke',
-            markerStart: arrowStart ? markerUrl : undefined,
-            markerEnd: arrowEnd ? markerUrl : undefined,
-            strokeDasharray: active ? '8 5' : undefined },
-            active ? h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
-              dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' }) : null),
+          h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
+            h('path', { d: path, stroke, strokeWidth: width,
+              fill: 'none', vectorEffect: 'non-scaling-stroke',
+              markerStart: arrowStart ? markerUrl : undefined,
+              markerEnd: arrowEnd ? markerUrl : undefined }),
+            active ? h('path', { d: path, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
+              fill: 'none', vectorEffect: 'non-scaling-stroke', strokeDasharray: '8 5' },
+              h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
+                dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null),
           name === 'ValueConnection' && value != null
             ? h('text', { x: 50, y: 13, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, String(value)) : null,
           arrowStart || arrowEnd ? h('defs', null,

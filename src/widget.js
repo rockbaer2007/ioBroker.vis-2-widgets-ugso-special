@@ -76,6 +76,7 @@ const lineStyle = group('ugsoLineStyle', 'Darstellung', [
   color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
   field('arrowAtStart', 'checkbox', 'Pfeil am Anfang', { default: false }),
   field('arrowAtEnd', 'checkbox', 'Pfeil am Ende', { default: false }),
+  numericField('arrowSize', 'Pfeilgröße', 5, 2, 20),
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
   animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
@@ -161,23 +162,27 @@ export function createWidget(name) {
         const path = 'M ' + points.map(point => point.join(' ')).join(' L ');
         const arrowStart = data.arrowAtStart === true || data.arrowAtStart === 'true';
         const arrowEnd = data.arrowAtEnd === true || data.arrowAtEnd === 'true';
+        const arrowSize = clamp(data.arrowSize, 5, 2, 20);
         const markerUrl = 'url(#' + this.lineMarkerId + ')';
         return h('svg', { width: '100%', height: '100%', viewBox: '0 0 100 40', preserveAspectRatio: 'none',
           overflow: arrowStart || arrowEnd ? 'visible' : undefined, role: 'img', 'aria-label': label },
           h('g', { opacity: clamp(data.opacity, 100, 0, 100) / 100 },
             h('path', { d: path, stroke, strokeWidth: width,
-              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke',
-              markerStart: arrowStart ? markerUrl : undefined,
-              markerEnd: arrowEnd ? markerUrl : undefined }),
+              fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
             active ? h('path', { d: path, stroke: data.animationFlowColor || '#ffffff', strokeWidth: width,
               fill: 'none', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', strokeDasharray: '8 5' },
               h('animate', { attributeName: 'stroke-dashoffset', from: 0, to: direction < 0 ? 13 : -13,
-                dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null),
+                dur: clamp(data.duration, 1, 0.2, 20) + 's', repeatCount: 'indefinite' })) : null,
+            arrowStart || arrowEnd ? h('path', {
+              d: path, fill: 'none', stroke: 'none', strokeWidth: width, vectorEffect: 'non-scaling-stroke',
+              markerStart: arrowStart ? markerUrl : undefined,
+              markerEnd: arrowEnd ? markerUrl : undefined,
+            }) : null),
           name === 'ValueConnection' && value != null
             ? h('text', { x: 50, y: 13, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, String(value)) : null,
           arrowStart || arrowEnd ? h('defs', null,
             h('marker', { id: this.lineMarkerId, viewBox: '0 0 6 6', refX: 6, refY: 3,
-              markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
+              markerWidth: arrowSize, markerHeight: arrowSize, orient: 'auto-start-reverse' },
             h('path', { d: 'M 0 0 L 6 3 L 0 6 Z', fill: stroke }))) : null);
       }
 

@@ -1,1 +1,0 @@
-import{t as e}from"./widget-CGBopbi7.js";var t=e(`ValueCalculation`);export{t as default};

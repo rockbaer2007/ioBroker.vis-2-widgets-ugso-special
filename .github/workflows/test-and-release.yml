@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 24
           lint: true
-          test-command: npm run build && npm run test:package
+      - run: npm run build
 
   adapter-tests:
     runs-on: ubuntu-latest

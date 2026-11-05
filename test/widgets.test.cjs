@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const helper = require('@iobroker/vis-2-widgets-testing');
 
-const adapterName = 'vis-2-widgets-ugso-spezial';
+const adapterName = 'vis-2-widgets-ugso-special';
 
 describe(adapterName, function () {
     this.timeout(300000);

@@ -1,4 +1,10 @@
-# UGSo Spezial für ioBroker VIS 2
+# UGSo Special für ioBroker VIS 2
+
+Das npm-Paket heißt jetzt `iobroker.vis-2-widgets-ugso-special`.
+Exportiere vorhandene VIS-2-Projekte vor dem Paketwechsel als Sicherung.
+Installiere das neue Paket, starte VIS 2 neu und prüfe das Projekt,
+bevor du das bisherige Paket entfernst. Die Widget-Template-IDs und der interne
+Federationsname bleiben für vorhandene Projekte erhalten.
 
 In der Widget-Auswahl stehen **SVG-Line** und **SVG LineBox** zur Verfügung. SVG-Line liest einen ioBroker-Datenpunkt. SVG LineBox ist ein runder Dockpunkt mit einstellbarem Durchmesser in Pixeln.
 
@@ -15,10 +21,10 @@ Die freie X-Position des Linienendes reicht bei **Gerade** und **Senkrecht, dann
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/tarball/v0.1.31
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/tarball/v0.1.32
 ```
 
-Anschließend den VIS-2-Editor neu laden und **UGSo Spezial** in der Widget-Auswahl öffnen.
+Anschließend den VIS-2-Editor neu laden und **UGSo Special** in der Widget-Auswahl öffnen.
 
 ## Umfang des Teststands
 

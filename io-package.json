@@ -1,9 +1,14 @@
 {
   "common": {
-    "name": "vis-2-widgets-ugso-spezial",
-    "version": "0.1.31",
+    "name": "vis-2-widgets-ugso-special",
+    "version": "0.1.32",
     "news": {
-      "0.1.31": {
+      "0.1.32": {
+        "en": "Rename the package and widget set to UGSo Special.",
+        "de": "Paket und Widget-Set in UGSo Special umbenennen.",
+        "fr": "Renommage du paquet et du jeu de widgets en UGSo Special."
+      },
+      "0.1.32": {
         "en": "Publish the npm package with a provenance statement.",
         "de": "npm-Paket mit Herkunftsnachweis veröffentlichen.",
         "ru": "Публикация пакета npm с подтверждением происхождения.",
@@ -30,22 +35,22 @@
         "zh-cn": "为加入 ioBroker 适配器目录做准备。"
       }
     },
-    "icon": "ugso-spezial.svg",
-    "extIcon": "https://raw.githubusercontent.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/main/admin/ugso-spezial.svg",
+    "icon": "ugso-special.svg",
+    "extIcon": "https://raw.githubusercontent.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/main/admin/ugso-special.svg",
     "tier": 3,
     "keywords": ["visualization", "vis-2", "svg"],
     "titleLang": {
-      "en": "UGSo Spezial",
-      "de": "UGSo Spezial",
-      "ru": "UGSo Spezial",
-      "pt": "UGSo Spezial",
-      "nl": "UGSo Spezial",
-      "fr": "UGSo Spezial",
-      "it": "UGSo Spezial",
-      "es": "UGSo Spezial",
-      "pl": "UGSo Spezial",
-      "uk": "UGSo Spezial",
-      "zh-cn": "UGSo Spezial"
+      "en": "UGSo Special",
+      "de": "UGSo Special",
+      "ru": "UGSo Special",
+      "pt": "UGSo Special",
+      "nl": "UGSo Special",
+      "fr": "UGSo Special",
+      "it": "UGSo Special",
+      "es": "UGSo Special",
+      "pl": "UGSo Special",
+      "uk": "UGSo Special",
+      "zh-cn": "UGSo Special"
     },
     "desc": {
       "de": "SVG-Linie und SVG-Wertbox für VIS 2",
@@ -85,7 +90,7 @@
       "ugsoSpezial": {
         "name": "ugsoSpezial",
         "i18n": {},
-        "url": "vis-2-widgets-ugso-spezial/customWidgets.js",
+        "url": "vis-2-widgets-ugso-special/customWidgets.js",
         "bundlerType": "module",
         "components": [
           "SvgLine",

@@ -11,5 +11,5 @@ export default defineConfig({
     shared: { react: { singleton: true, requiredVersion: false }, 'react-dom': { singleton: true, requiredVersion: false } },
     dts: false,
   })],
-  build: { outDir: 'widgets/vis-2-widgets-ugso-spezial', target: 'chrome89' },
+  build: { outDir: 'widgets/vis-2-widgets-ugso-special', target: 'chrome89' },
 });

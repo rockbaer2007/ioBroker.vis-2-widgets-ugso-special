@@ -1,10 +1,15 @@
-# ioBroker.vis-2-widgets-ugso-spezial
+# ioBroker.vis-2-widgets-ugso-special
 
-UGSo Spezial adds animated SVG lines and summing nodes to ioBroker VIS 2. [German documentation](README.de.md)
+UGSo Special adds animated SVG lines and summing nodes to ioBroker VIS 2. [German documentation](README.de.md)
 
 ## Installation
 
-After installation, open **UGSo Spezial** in the VIS 2 widget palette. See the [release page](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-spezial/releases) for available versions.
+The npm package is now named `iobroker.vis-2-widgets-ugso-special`.
+For an existing installation, export your VIS 2 project before switching packages.
+Install the new package, restart VIS 2 and check the project before removing the old package.
+Widget template IDs and the internal federation name are retained for existing projects.
+
+After installation, open **UGSo Special** in the VIS 2 widget palette. See the [release page](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/releases) for available versions.
 
 ## Widgets
 
@@ -14,6 +19,10 @@ After installation, open **UGSo Spezial** in the VIS 2 widget palette. See the [
 In the editor, drag a yellow endpoint handle to snap a line to a node or another line. A line with an arrowhead cannot use that endpoint for visual docking. LineBox input and output selection controls value routing independently of docking.
 
 ## Changelog
+
+### 0.1.32
+
+- Rename the npm package, repository and palette label to UGSo Special.
 
 ### 0.1.31
 

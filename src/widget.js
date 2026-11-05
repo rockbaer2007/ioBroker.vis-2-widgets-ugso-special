@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import setIcon from '../admin/ugso-spezial.svg?inline';
+import setIcon from '../admin/ugso-special.svg?inline';
 import { convert, number, trimLine } from './logic.js';
 
 const h = React.createElement;
@@ -462,8 +462,8 @@ export function createWidget(name) {
     static getWidgetInfo() {
       return {
         id: 'tplUgso' + name,
-        visSet: 'vis-2-widgets-ugso-spezial',
-        visSetLabel: 'UGSo Spezial',
+        visSet: 'vis-2-widgets-ugso-special',
+        visSetLabel: 'UGSo Special',
         visSetIcon: setIcon,
         visSetColor: '#a5e1f8',
         visName: label,

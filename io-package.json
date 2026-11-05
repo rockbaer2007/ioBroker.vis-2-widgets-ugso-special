@@ -1,49 +1,56 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-special",
-    "version": "0.1.33",
+    "version": "0.1.34",
     "news": {
+      "0.1.34": {
+        "en": "Complete release translations and catalogue validation; correct package dependencies and release workflow.",
+        "de": "Release-Übersetzungen und Katalogprüfung vervollständigen; Paketabhängigkeiten und Veröffentlichung korrigieren.",
+        "fr": "Compléter les traductions des versions et la validation du catalogue ; corriger les dépendances et le processus de publication.",
+        "ru": "Дополнены переводы выпусков и проверки каталога; исправлены зависимости пакета и процесс публикации.",
+        "pt": "Traduções das versões e validação do catálogo concluídas; dependências e fluxo de publicação corrigidos.",
+        "nl": "Releasevertalingen en cataloguscontroles aangevuld; pakketafhankelijkheden en publicatieworkflow gecorrigeerd.",
+        "it": "Completate le traduzioni delle versioni e la convalida del catalogo; corrette le dipendenze e il flusso di pubblicazione.",
+        "es": "Se completan las traducciones de versiones y la validación del catálogo; se corrigen las dependencias y el proceso de publicación.",
+        "pl": "Uzupełniono tłumaczenia wydań i kontrole katalogu; poprawiono zależności pakietu i proces publikacji.",
+        "uk": "Доповнено переклади випусків і перевірки каталогу; виправлено залежності пакета та процес публікації.",
+        "zh-cn": "补全版本翻译和目录验证；修正软件包依赖及发布流程。"
+      },
       "0.1.33": {
         "en": "Publish UGSo Special with npm provenance.",
         "de": "UGSo Special mit npm-Herkunftsnachweis veröffentlichen.",
-        "fr": "Publication de UGSo Special avec attestation de provenance npm."
+        "fr": "Publication de UGSo Special avec attestation de provenance npm.",
+        "ru": "Публикация UGSo Special с подтверждением происхождения npm.",
+        "pt": "Publicação do UGSo Special com declaração de proveniência npm.",
+        "nl": "Publicatie van UGSo Special met npm-herkomstverklaring.",
+        "it": "Pubblicazione di UGSo Special con attestazione di provenienza npm.",
+        "es": "Publicación de UGSo Special con declaración de procedencia npm.",
+        "pl": "Publikacja UGSo Special z poświadczeniem pochodzenia npm.",
+        "uk": "Публікація UGSo Special з підтвердженням походження npm.",
+        "zh-cn": "发布带有 npm 来源证明的 UGSo Special。"
       },
       "0.1.32": {
         "en": "Rename the package and widget set to UGSo Special.",
         "de": "Paket und Widget-Set in UGSo Special umbenennen.",
-        "fr": "Renommage du paquet et du jeu de widgets en UGSo Special."
-      },
-      "0.1.32": {
-        "en": "Publish the npm package with a provenance statement.",
-        "de": "npm-Paket mit Herkunftsnachweis veröffentlichen.",
-        "ru": "Публикация пакета npm с подтверждением происхождения.",
-        "pt": "Publicação do pacote npm com declaração de proveniência.",
-        "nl": "Publicatie van het npm-pakket met herkomstverklaring.",
-        "fr": "Publication du paquet npm avec une attestation de provenance.",
-        "it": "Pubblicazione del pacchetto npm con attestazione di provenienza.",
-        "es": "Publicación del paquete npm con una declaración de procedencia.",
-        "pl": "Publikacja pakietu npm z poświadczeniem pochodzenia.",
-        "uk": "Публікація пакета npm з підтвердженням походження.",
-        "zh-cn": "发布带有来源证明的 npm 软件包。"
-      },
-      "0.1.30": {
-        "en": "Prepare for the ioBroker adapter catalogue.",
-        "de": "Aufnahme in den ioBroker-Adapterkatalog vorbereiten.",
-        "ru": "Подготовка к добавлению в каталог ioBroker.",
-        "pt": "Preparação para o catálogo de adaptadores ioBroker.",
-        "nl": "Voorbereiding voor de ioBroker-adaptercatalogus.",
-        "fr": "Préparation de l’ajout au catalogue ioBroker.",
-        "it": "Preparazione per il catalogo degli adattatori ioBroker.",
-        "es": "Preparación para el catálogo de adaptadores de ioBroker.",
-        "pl": "Przygotowanie do katalogu adapterów ioBroker.",
-        "uk": "Підготовка до додавання в каталог ioBroker.",
-        "zh-cn": "为加入 ioBroker 适配器目录做准备。"
+        "fr": "Renommage du paquet et du jeu de widgets en UGSo Special.",
+        "ru": "Пакет и набор виджетов переименованы в UGSo Special.",
+        "pt": "Pacote e conjunto de widgets renomeados para UGSo Special.",
+        "nl": "Pakket en widgetset hernoemd naar UGSo Special.",
+        "it": "Pacchetto e raccolta di widget rinominati in UGSo Special.",
+        "es": "El paquete y el conjunto de widgets pasan a llamarse UGSo Special.",
+        "pl": "Zmieniono nazwę pakietu i zestawu widżetów na UGSo Special.",
+        "uk": "Пакет і набір віджетів перейменовано на UGSo Special.",
+        "zh-cn": "将软件包和组件集重命名为 UGSo Special。"
       }
     },
     "icon": "ugso-special.svg",
     "extIcon": "https://raw.githubusercontent.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/main/admin/ugso-special.svg",
     "tier": 3,
-    "keywords": ["visualization", "vis-2", "svg"],
+    "keywords": [
+      "visualization",
+      "vis-2",
+      "svg"
+    ],
     "titleLang": {
       "en": "UGSo Special",
       "de": "UGSo Special",
@@ -90,7 +97,9 @@
     "dependencies": [
       "vis-2"
     ],
-    "restartAdapters": ["vis-2"],
+    "restartAdapters": [
+      "vis-2"
+    ],
     "visWidgets": {
       "ugsoSpezial": {
         "name": "ugsoSpezial",

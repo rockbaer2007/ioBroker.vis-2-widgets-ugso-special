@@ -21,7 +21,7 @@ Die freie X-Position des Linienendes reicht bei **Gerade** und **Senkrecht, dann
 In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
 
 ```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/tarball/v0.1.33
+https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/tarball/v0.1.34
 ```
 
 Anschließend den VIS-2-Editor neu laden und **UGSo Special** in der Widget-Auswahl öffnen.

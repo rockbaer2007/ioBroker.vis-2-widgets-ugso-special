@@ -20,6 +20,12 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 ## Changelog
 
+### 0.1.34
+
+- Complete all eleven catalogue changelog languages and remove duplicate/unpublished news entries.
+- Add linting and ioBroker package validation to CI; use the official deployment action with trusted publishing.
+- Declare the React runtime dependencies explicitly. Widget IDs, configuration and VIS projects are unchanged.
+
 ### 0.1.33
 
 - Publish the renamed package through trusted publishing with npm provenance.

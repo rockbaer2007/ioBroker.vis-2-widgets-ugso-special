@@ -1,8 +1,13 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-special",
-    "version": "0.1.32",
+    "version": "0.1.33",
     "news": {
+      "0.1.33": {
+        "en": "Publish UGSo Special with npm provenance.",
+        "de": "UGSo Special mit npm-Herkunftsnachweis veröffentlichen.",
+        "fr": "Publication de UGSo Special avec attestation de provenance npm."
+      },
       "0.1.32": {
         "en": "Rename the package and widget set to UGSo Special.",
         "de": "Paket und Widget-Set in UGSo Special umbenennen.",

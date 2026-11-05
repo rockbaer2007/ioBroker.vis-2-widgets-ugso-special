@@ -20,6 +20,10 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 ## Changelog
 
+### 0.1.33
+
+- Publish the renamed package through trusted publishing with npm provenance.
+
 ### 0.1.32
 
 - Rename the npm package, repository and palette label to UGSo Special.

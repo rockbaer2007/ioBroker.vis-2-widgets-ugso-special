@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-special",
-    "version": "0.1.35",
+    "version": "0.1.36",
     "news": {
+      "0.1.36": {
+        "en": "Provide all eleven ioBroker widget languages and verify translation parity in source and build output.",
+        "de": "Alle elf ioBroker-Widgetsprachen ergänzen und gleiche Übersetzungsschlüssel in Quelle und Build prüfen.",
+        "es": "Añadir los once idiomas de ioBroker y comprobar las claves de traducción en el código y la compilación.",
+        "fr": "Ajouter les onze langues ioBroker et vérifier les clés de traduction dans les sources et la compilation.",
+        "it": "Aggiungere tutte le undici lingue ioBroker e verificare le chiavi nelle sorgenti e nella compilazione.",
+        "nl": "Alle elf ioBroker-talen toevoegen en vertaalsleutels in broncode en build controleren.",
+        "pl": "Dodać wszystkie jedenaście języków ioBroker i sprawdzić klucze tłumaczeń w źródłach oraz kompilacji.",
+        "pt": "Adicionar os onze idiomas ioBroker e verificar as chaves de tradução no código e na compilação.",
+        "ru": "Добавлены все одиннадцать языков ioBroker и проверка ключей переводов в исходниках и сборке.",
+        "uk": "Додано всі одинадцять мов ioBroker та перевірку ключів перекладів у джерелах і збірці.",
+        "zh-cn": "补全 ioBroker 的十一种组件语言，并检查源码与构建产物中的翻译键一致性。"
+      },
       "0.1.35": {
         "en": "Translate widget editor and runtime into German and English; update installation documentation and review tests.",
         "de": "Widget-Editor und Laufzeit auf Deutsch und Englisch übersetzen; Installationsdokumentation und Review-Tests aktualisieren.",

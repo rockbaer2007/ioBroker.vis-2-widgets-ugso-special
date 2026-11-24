@@ -15,12 +15,24 @@ After installation, open **UGSo Special** in the VIS 2 widget palette. See the [
 
 ## Widgets
 
+The widget editor and runtime texts support all eleven ioBroker languages:
+English, German, Spanish, French, Italian, Dutch, Polish, Portuguese, Russian,
+Ukrainian and Simplified Chinese. VIS 2 selects its current language; unknown
+languages fall back to English. The additional translations are AI-assisted and
+welcome native-speaker review.
+
 - **SVG-Line** reads an ioBroker state and draws a straight, right-angle or waypoint route. Configure the arrowheads, colours, dash lengths and cycle duration. A positive value animates forward, a negative value reverses direction and zero stops the animation. Speed can be fixed or proportional to the absolute input value.
 - **SVG LineBox** is a circular node. Select up to four input lines and two output lines. The node sums the input values and an optional correction state, then passes the total to the output lines. It can also write the total in the VIS runtime to an existing writable numeric state under `0_userdata.0`. A missing selected input blocks the total until it becomes available.
 
 In the editor, drag a yellow endpoint handle to snap a line to a node or another line. A line with an arrowhead cannot use that endpoint for visual docking. LineBox input and output selection controls value routing independently of docking.
 
 ## Changelog
+
+### 0.1.36
+
+- Add all nine previously missing widget language files in both source and build output, addressing checker W5603.
+- Verify all eleven languages, 56 identical keys per dictionary and real browser language loading.
+- Preserve existing widget IDs, settings and project data.
 
 ### 0.1.35
 

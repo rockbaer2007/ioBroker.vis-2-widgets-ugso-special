@@ -4,6 +4,7 @@ const helper = require('@iobroker/vis-2-widgets-testing');
 const fs = require('node:fs');
 const path = require('node:path');
 const { version } = require('../package.json');
+const languages = ['de', 'en', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ru', 'uk', 'zh-cn'];
 
 const adapterName = 'vis-2-widgets-ugso-special';
 
@@ -20,14 +21,14 @@ describe(adapterName, function () {
         await helper.createProject();
     });
 
-    it('uses German and English in the real VIS editor and runtime tooltip', async () => {
+    it('loads all eleven languages in the real VIS editor and runtime tooltip', async () => {
         const system = await objects.getObjectAsync('system.config');
         const originalLanguage = system.common.language;
         try {
-            for (const [language, expected, noValue] of [
-                ['de', 'Datenpunkt A', 'Keine Zahlenwerte angedockt'],
-                ['en', 'Data point A', 'No numeric values docked'],
-            ]) {
+            for (const language of languages) {
+                const messages = require('../src/i18n/' + language + '.json');
+                const expected = messages['ugso_special_Data point A'];
+                const noValue = messages['ugso_special_No numeric values docked'];
                 system.common.language = language;
                 await objects.setObjectAsync('system.config', system);
                 await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -40,7 +41,7 @@ describe(adapterName, function () {
                 await page.click('#' + line);
                 await helper.screenshot(page, 'editor-' + language);
                 await page.waitForFunction(label => document.body.innerText.includes(label),
-                    { timeout: 10000 }, language === 'de' ? 'Datenquelle' : 'Data source');
+                    { timeout: 10000 }, messages['ugso_special_Data source']);
                 await helper.view.deleteWidget(page, line);
                 const box = await helper.palette.addWidget(page, 'tplUgsoLineBox');
                 await page.waitForFunction((id, title) =>

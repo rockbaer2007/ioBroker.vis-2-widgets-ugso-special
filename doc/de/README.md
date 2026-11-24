@@ -27,8 +27,10 @@ Die freie X-Position des Linienendes reicht bei **Gerade** und **Senkrecht, dann
 ## Sprache
 
 Editorbeschriftungen, Auswahlwerte, Hilfetexte und Laufzeit-Tooltips unterstützen
-Deutsch und Englisch und folgen der VIS-2-Sprache. Andere Sprachen verwenden den
-englischen Fallback. Gespeicherte Feldnamen, Auswahlwerte und Widget-IDs bleiben
+alle elf ioBroker-Sprachen: DE, EN, ES, FR, IT, NL, PL, PT, RU, UK und ZH-CN.
+Die Anzeige folgt der VIS-2-Sprache; unbekannte Sprachen verwenden den englischen
+Fallback. Die zusätzlichen Übersetzungen sind KI-unterstützt; Rückmeldungen von
+Muttersprachlern sind willkommen. Gespeicherte Feldnamen, Auswahlwerte und Widget-IDs bleiben
 unverändert; bestehende VIS-Projekte benötigen keine Konvertierung.
 
 ## Umfang des Teststands

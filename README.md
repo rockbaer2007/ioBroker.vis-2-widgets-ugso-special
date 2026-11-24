@@ -50,7 +50,7 @@ The existing official ioBroker deployment action publishes only after CI passes.
 ## Changelog
 
 <!-- Add the next release notes below this marker. -->
-### **WORK IN PROGRESS**
+### 0.1.37 (2026-11-24)
 
 - Adopt the shared ioBroker ESLint/Prettier configuration and release-script with its ioBroker plugin.
 - Add monthly Dependabot checks, editor JSON schemas and compatible dependency ranges.
@@ -78,10 +78,6 @@ The existing official ioBroker deployment action publishes only after CI passes.
 ### 0.1.33
 
 - Publish the renamed package through trusted publishing with npm provenance.
-
-### 0.1.32
-
-- Rename the npm package, repository and palette label to UGSo Special.
 
 Older entries: [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 

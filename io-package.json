@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-special",
-    "version": "0.1.36",
+    "version": "0.1.37",
     "news": {
       "0.1.37": {
         "en": "Adopt shared ioBroker linting and release tooling, dependency ranges, JSON schemas and Dependabot; preserve existing projects.",

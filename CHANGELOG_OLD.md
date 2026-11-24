@@ -12,3 +12,6 @@
 ### 0.1.29
 
 - Add the set icon and improve palette label contrast.
+## 0.1.32
+
+- Rename the npm package, repository and palette label to UGSo Special.

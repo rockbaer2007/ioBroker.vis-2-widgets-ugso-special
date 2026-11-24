@@ -1,5 +1,13 @@
 # UGSo Special für ioBroker VIS 2
 
+[English](../../README.md)
+
+## Installation
+
+Installiere **UGSo Special** im offiziellen ioBroker Admin unter **Adapter**, sobald
+das Paket im ausgewählten Repository verfügbar ist. Verwende keine Installation
+von GitHub oder über eine benutzerdefinierte URL.
+
 Das npm-Paket heißt jetzt `iobroker.vis-2-widgets-ugso-special`.
 Exportiere vorhandene VIS-2-Projekte vor dem Paketwechsel als Sicherung.
 Installiere das neue Paket, starte VIS 2 neu und prüfe das Projekt,
@@ -16,15 +24,12 @@ Seit 0.1.18 enthält das Paket nur diese beiden Widgets. Ersetze die vier frühe
 
 Die freie X-Position des Linienendes reicht bei **Gerade** und **Senkrecht, dann waagerecht** bis 100 %, bei anderen Verläufen bis 95 %. Unter **Animation → Animationsgeschwindigkeit** stehen **Fest** und **Nach Eingangswert** zur Auswahl. Bei **Fest** gilt die eingestellte Zyklusdauer. Bei **Nach Eingangswert** steuert der Betrag des Datenwerts das Tempo. Beim Referenzwert (standardmäßig 50) gilt die eingestellte Zyklusdauer. Die Zyklusdauer bleibt zwischen 0,2 und 20 Sekunden.
 
-## Installation über GitHub
+## Sprache
 
-In ioBroker Admin unter **Adapter** den Expertenmodus einschalten und **Von URL installieren** öffnen. Als benutzerdefinierte URL eintragen:
-
-```text
-https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/tarball/v0.1.34
-```
-
-Anschließend den VIS-2-Editor neu laden und **UGSo Special** in der Widget-Auswahl öffnen.
+Editorbeschriftungen, Auswahlwerte, Hilfetexte und Laufzeit-Tooltips unterstützen
+Deutsch und Englisch und folgen der VIS-2-Sprache. Andere Sprachen verwenden den
+englischen Fallback. Gespeicherte Feldnamen, Auswahlwerte und Widget-IDs bleiben
+unverändert; bestehende VIS-Projekte benötigen keine Konvertierung.
 
 ## Umfang des Teststands
 
@@ -35,3 +40,7 @@ Die Pfeilspitze sitzt am Linienendpunkt. Der Strich und die Animation enden an d
 Linien unterstützen gerade und rechtwinklige Verläufe mit frei einstellbaren Endpunkten innerhalb des Widgets. Beim Verlauf **Über Zwischenpunkt** lässt sich ein zweiter Zwischenpunkt mit eigenen X- und Y-Koordinaten einschalten.
 
 Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. Bei anderen UGSo-Linien rastet der Ring am Start, am Ende oder an einem roten Zwischenpunkt ein. Der Anschluss folgt dem Zwischenpunkt, wenn du dessen Koordinaten änderst. In der Runtime sind die Ringe und roten Markierungen ausgeblendet.
+
+## Lizenz
+
+MIT, siehe [LICENSE](../../LICENSE).

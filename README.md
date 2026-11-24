@@ -1,10 +1,12 @@
 # ioBroker.vis-2-widgets-ugso-special
 
-UGSo Special adds animated SVG lines and summing nodes to ioBroker VIS 2. [German documentation](README.de.md)
+UGSo Special adds animated SVG lines and summing nodes to ioBroker VIS 2. [German documentation](doc/de/README.md)
 
 ## Installation
 
-The npm package is now named `iobroker.vis-2-widgets-ugso-special`.
+Install **UGSo Special** through the official ioBroker Admin **Adapters** page once
+it is available in your selected repository. Do not install from GitHub or a custom URL.
+The npm package is named `iobroker.vis-2-widgets-ugso-special`.
 For an existing installation, export your VIS 2 project before switching packages.
 Install the new package, restart VIS 2 and check the project before removing the old package.
 Widget template IDs and the internal federation name are retained for existing projects.
@@ -20,6 +22,13 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 ## Changelog
 
+### 0.1.35
+
+- Add complete German and English labels, options, help texts and runtime tooltips through VIS 2 i18n, with English fallback.
+- Move German documentation to `doc/de`, remove GitHub installation instructions and document installation through Admin.
+- Keep widget IDs, stored configuration keys, option values and existing projects compatible.
+- Add translation, project compatibility and object export checks.
+
 ### 0.1.34
 
 - Complete all eleven catalogue changelog languages and remove duplicate/unpublished news entries.
@@ -34,18 +43,7 @@ In the editor, drag a yellow endpoint handle to snap a line to a node or another
 
 - Rename the npm package, repository and palette label to UGSo Special.
 
-### 0.1.31
-
-- Publish the npm package with a provenance statement through GitHub Actions.
-
-### 0.1.30
-
-- Prepare adapter metadata and automated VIS 2 installation tests for the ioBroker catalogue.
-- Restart VIS 2 after installing widget updates so it picks up the new bundle.
-
-### 0.1.29
-
-- Add the set icon and improve palette label contrast.
+Older entries: [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 
 ## License
 

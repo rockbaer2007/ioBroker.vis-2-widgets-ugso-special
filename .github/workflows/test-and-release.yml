@@ -25,6 +25,7 @@ jobs:
           node-version: 24
           lint: true
       - run: npm run build
+      - run: npm run test:unit
 
   adapter-tests:
     runs-on: ubuntu-latest
@@ -39,6 +40,13 @@ jobs:
       - run: npx --no-install puppeteer browsers install chrome
       - run: npm run build
       - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: widget-review-evidence
+          path: |
+            artifacts/
+            tmp/screenshots/
 
   deploy:
     needs: [check-and-lint, adapter-tests]

@@ -2,33 +2,34 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import setIcon from '../admin/ugso-special.svg?inline';
 import { convert, number, trimLine } from './logic.js';
+import { messageKey, translate } from './i18n.js';
 
 const h = React.createElement;
 const lineChangedEvent = 'ugso-svg-line-changed';
 const field = (name, type, label, extra = {}) => ({ name, type, label, ...extra });
-const input = field('oid', 'id', 'Datenpunkt A');
-const unit = field('unit', 'text', 'Einheit');
-const color = field('color', 'color', 'Farbe', { default: '#38bdf8' });
-const lineWidth = field('lineWidth', 'number', 'Linienbreite', { default: 3 });
+const input = field('oid', 'id', 'Data point A');
+const unit = field('unit', 'text', 'Unit');
+const color = field('color', 'color', 'Color', { default: '#38bdf8' });
+const lineWidth = field('lineWidth', 'number', 'Line width', { default: 3 });
 const endXLimit = route => !route || route === 'straight' || route === 'vertical-first' ? 100 : 95;
-const animated = field('animated', 'checkbox', 'Animation aktivieren', {
+const animated = field('animated', 'checkbox', 'Enable animation', {
   default: false,
-  tooltip: 'Ohne Datenpunkt läuft die Animation vorwärts. Ein Datenpunkt kann sie anhalten oder umkehren.',
+  tooltip: 'Without a data point, the animation runs forward. A data point can stop or reverse it.',
 });
 const group = (name, label, fields) => ({ name, label, fields });
-const source = group('ugsoSource', 'Datenquelle', [input]);
+const source = group('ugsoSource', 'Data source', [input]);
 const numericField = (name, label, value, min, max, step = 1) =>
   field(name, 'number', label, { default: value, min, max, step });
-const routing = group('ugsoRouting', 'Linienführung', [
-  field('route', 'select', 'Verlauf', {
+const routing = group('ugsoRouting', 'Routing', [
+  field('route', 'select', 'Route', {
     options: [
-      { value: 'straight', label: 'Gerade' },
-      { value: 'horizontal-first', label: 'Waagerecht, dann senkrecht' },
-      { value: 'vertical-first', label: 'Senkrecht, dann waagerecht' },
-      { value: 'waypoint', label: 'Über Zwischenpunkt' },
+      { value: 'straight', label: 'Straight' },
+      { value: 'horizontal-first', label: 'Horizontal, then vertical' },
+      { value: 'vertical-first', label: 'Vertical, then horizontal' },
+      { value: 'waypoint', label: 'Via waypoint' },
     ],
     default: 'straight',
-    tooltip: 'Für einen rechten Winkel müssen sich Start und Ende auf beiden Achsen unterscheiden.',
+    tooltip: 'For a right angle, the start and end must differ on both axes.',
     onChange: (_field, data, changeData) => {
       if (data.route !== 'horizontal-first' && data.route !== 'vertical-first') return;
       const startX = clamp(data.startX, 0, 0, 100);
@@ -44,8 +45,8 @@ const routing = group('ugsoRouting', 'Linienführung', [
   numericField('startX', 'Start X (%)', 0, 0, 100),
   numericField('startY', 'Start Y (%)', 50, 0, 100),
   {
-    ...numericField('endX', 'Ende X (%)', 100, 0, 100),
-    tooltip: 'Bei „Gerade“ und „Senkrecht, dann waagerecht“ sind 100 % möglich. Sonst gilt 95 %.',
+    ...numericField('endX', 'End X (%)', 100, 0, 100),
+    tooltip: 'Straight and vertical-then-horizontal routes allow 100%. Other routes allow 95%.',
     onChange: (_field, data, changeData) => {
       const limit = endXLimit(data.route);
       if (number(data.endX) > limit) {
@@ -54,60 +55,60 @@ const routing = group('ugsoRouting', 'Linienführung', [
       }
     },
   },
-  numericField('endY', 'Ende Y (%)', 50, 0, 100),
-  { ...numericField('viaX', 'Zwischenpunkt X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
-  { ...numericField('viaY', 'Zwischenpunkt Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
-  field('secondWaypoint', 'checkbox', 'Zweiten Zwischenpunkt verwenden', {
+  numericField('endY', 'End Y (%)', 50, 0, 100),
+  { ...numericField('viaX', 'Waypoint X (%)', 50, 0, 100), hidden: 'data.route !== "waypoint"' },
+  { ...numericField('viaY', 'Waypoint Y (%)', 25, 0, 100), hidden: 'data.route !== "waypoint"' },
+  field('secondWaypoint', 'checkbox', 'Use a second waypoint', {
     default: false, hidden: 'data.route !== "waypoint"',
   }),
   {
-    ...numericField('via2X', 'Zweiter Zwischenpunkt X (%)', 75, 0, 100),
+    ...numericField('via2X', 'Second waypoint X (%)', 75, 0, 100),
     hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
   },
   {
-    ...numericField('via2Y', 'Zweiter Zwischenpunkt Y (%)', 75, 0, 100),
+    ...numericField('via2Y', 'Second waypoint Y (%)', 75, 0, 100),
     hidden: 'data.route !== "waypoint" || (data.secondWaypoint !== true && data.secondWaypoint !== "true")',
   },
 ]);
-const lineStyle = group('ugsoLineStyle', 'Darstellung', [
-  color, lineWidth, numericField('opacity', 'Deckkraft (%)', 100, 0, 100),
-  field('arrowAtStart', 'checkbox', 'Pfeil am Anfang', { default: false }),
-  field('arrowAtEnd', 'checkbox', 'Pfeil am Ende', { default: false }),
-  numericField('arrowSize', 'Pfeilgröße', 5, 2, 20),
+const lineStyle = group('ugsoLineStyle', 'Appearance', [
+  color, lineWidth, numericField('opacity', 'Opacity (%)', 100, 0, 100),
+  field('arrowAtStart', 'checkbox', 'Arrow at start', { default: false }),
+  field('arrowAtEnd', 'checkbox', 'Arrow at end', { default: false }),
+  numericField('arrowSize', 'Arrow size', 5, 2, 20),
 ]);
 const animation = group('ugsoAnimation', 'Animation', [
-  animated, numericField('duration', 'Dauer pro Zyklus (s)', 1, 0.2, 20, 0.1),
-  field('speedByValue', 'select', 'Animationsgeschwindigkeit', {
+  animated, numericField('duration', 'Cycle duration (s)', 1, 0.2, 20, 0.1),
+  field('speedByValue', 'select', 'Animation speed', {
     default: 'true',
     options: [
-      { value: 'false', label: 'Fest' },
-      { value: 'true', label: 'Nach Eingangswert' },
+      { value: 'false', label: 'Fixed' },
+      { value: 'true', label: 'By input value' },
     ],
   }),
-  { ...numericField('speedReference', 'Referenzwert für Zyklusdauer', 50, 0.01, 1000000000, 0.01),
+  { ...numericField('speedReference', 'Reference value for cycle duration', 50, 0.01, 1000000000, 0.01),
     hidden: 'data.speedByValue === false || data.speedByValue === "false"',
-    tooltip: 'Beim Referenzwert gilt die eingestellte Zyklusdauer. Doppelte Werte laufen doppelt so schnell.',
+    tooltip: 'At the reference value, the configured cycle duration applies. Twice the value runs twice as fast.',
   },
-  field('animationFlowColor', 'color', 'Bewegte Farbe', { default: '#ffffff' }),
-  numericField('animationDashLength', 'Länge der bewegten Farbe', 8, 1, 100),
-  numericField('animationGapLength', 'Länge der Grundfarbe', 5, 1, 100),
-  field('testAnimation', 'checkbox', 'Animation testen', {
+  field('animationFlowColor', 'color', 'Moving color', { default: '#ffffff' }),
+  numericField('animationDashLength', 'Moving color length', 8, 1, 100),
+  numericField('animationGapLength', 'Base color length', 5, 1, 100),
+  field('testAnimation', 'checkbox', 'Test animation', {
     default: false,
-    tooltip: 'Zeigt die Animation im Editor auch bei ausgeschalteter Animation oder stehendem Datenpunkt.',
+    tooltip: 'Preview the animation in the editor even when animation is disabled or the data point is stationary.',
   }),
 ]);
-const decimals = numericField('decimals', 'Nachkommastellen (−1 = automatisch)', -1, -1, 10);
-const boxStyle = group('ugsoDisplay', 'Darstellung', [
-  color, numericField('diameter', 'Durchmesser (px)', 16, 4, 200), unit, decimals,
+const decimals = numericField('decimals', 'Decimal places (-1 = automatic)', -1, -1, 10);
+const boxStyle = group('ugsoDisplay', 'Appearance', [
+  color, numericField('diameter', 'Diameter (px)', 16, 4, 200), unit, decimals,
 ]);
 const inputSlots = ['input1', 'input2', 'input3', 'input4'];
 const outputSlots = ['output1', 'output2'];
 const lineSlot = (key, label) => field(key, 'widget', label, { tpl: 'tplUgsoSvgLine', default: '' });
-const nodePorts = group('ugsoPorts', 'Ein- und Ausgänge', [
-  ...inputSlots.map((key, index) => lineSlot(key, 'Eingang ' + (index + 1))),
-  ...outputSlots.map((key, index) => lineSlot(key, 'Ausgang ' + (index + 1))),
-  field('correctionOid', 'id', 'Korrekturwert', { filter: { common: { type: 'number' } } }),
-  field('sumOid', 'id', 'Summen-Datenpunkt (0_userdata.0)', {
+const nodePorts = group('ugsoPorts', 'Inputs and outputs', [
+  ...inputSlots.map((key, index) => lineSlot(key, 'Input ' + (index + 1))),
+  ...outputSlots.map((key, index) => lineSlot(key, 'Output ' + (index + 1))),
+  field('correctionOid', 'id', 'Correction value', { filter: { common: { type: 'number' } } }),
+  field('sumOid', 'id', 'Sum data point (0_userdata.0)', {
     noSubscribe: true, filter: { common: { type: 'number', write: true } },
   }),
 ]);
@@ -262,7 +263,7 @@ export function createWidget(name) {
         if (current?.val !== value) await socket.setState(sumOid, { val: value, ack: true });
         this.lastPublished = { id: sumOid, value };
       } catch (error) {
-        console.warn('UGSo LineBox: Summe konnte nicht geschrieben werden.', error);
+        console.warn('UGSo LineBox: Could not write the sum.', error);
       } finally {
         this.publishPending = false;
         if (this.mounted && (this.sum !== value || this.state.rxData?.sumOid !== sumOid)) this.scheduleSum();
@@ -432,7 +433,7 @@ export function createWidget(name) {
         if (hasArrow(data, end) || !point || (!selected && !data[end + 'DockWidget'])) return null;
         return h('span', {
           key: end,
-          title: index === 0 ? 'Startpunkt ziehen' : 'Endpunkt ziehen',
+          title: translate(index === 0 ? 'Drag start point' : 'Drag end point'),
           style: {
             position: 'fixed', left: point[0], top: point[1], width: 14, height: 14,
             boxSizing: 'border-box', border: '2px solid #ffdf32', borderRadius: '50%',
@@ -470,7 +471,13 @@ export function createWidget(name) {
         visDefaultStyle: { width: 180, height: name === 'SvgLine' ? 48 : 64 },
         visAttrs: groups.map(group => ({
           ...group,
-          fields: group.fields.map(field => ({ ...field, options: structuredClone(field.options) })),
+          label: messageKey(group.label),
+          fields: group.fields.map(field => ({
+            ...field,
+            label: messageKey(field.label),
+            ...(field.tooltip ? { tooltip: messageKey(field.tooltip) } : {}),
+            options: field.options?.map(option => ({ ...option, label: messageKey(option.label) })),
+          })),
         })),
       };
     }
@@ -577,7 +584,7 @@ export function createWidget(name) {
 
       const precision = Math.trunc(clamp(data.decimals, -1, -1, 10));
       const display = this.sum !== null && precision >= 0 ? this.sum.toFixed(precision) : this.sum;
-      const text = display == null ? 'Keine Zahlenwerte angedockt' : String(display) + (data.unit ? ' ' + data.unit : '');
+      const text = display == null ? translate('No numeric values docked') : String(display) + (data.unit ? ' ' + data.unit : '');
       const diameter = clamp(data.diameter, 16, 4, 200);
       const correctionOid = data.correctionOid;
       const correction = correctionOid && correctionOid !== 'nothing_selected'
@@ -588,7 +595,7 @@ export function createWidget(name) {
       } }, h('span', {
         ref: this.nodeDot, 'data-ugso-node': '', 'data-ugso-correction': correction,
         'data-ugso-sum': this.sum ?? undefined, role: 'img', title: text,
-        'aria-label': 'Summe: ' + text,
+        'aria-label': translate('Sum:') + ' ' + text,
         style: { flex: 'none', width: diameter, height: diameter, borderRadius: '50%', background: stroke },
       }));
     }

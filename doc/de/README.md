@@ -43,6 +43,29 @@ Linien unterstützen gerade und rechtwinklige Verläufe mit frei einstellbaren E
 
 Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende auf oder nahe an ein Widget derselben Seite. Der Punkt rastet ein und folgt dem Widget. Ziehe den Ring auf eine freie Stelle innerhalb des Linienwidgets, um ihn zu lösen. Bei anderen UGSo-Linien rastet der Ring am Start, am Ende oder an einem roten Zwischenpunkt ein. Der Anschluss folgt dem Zwischenpunkt, wenn du dessen Koordinaten änderst. In der Runtime sind die Ringe und roten Markierungen ausgeblendet.
 
+## Entwicklung und Releases
+
+`npm ci` installiert die im Lockfile festgelegten Abhängigkeiten.
+`npm run release:verify` baut die Widgets und prüft sie mit der gemeinsamen
+ioBroker-ESLint-/Prettier-Konfiguration, Unit-Tests und Paketvalidierung.
+ESLint 9 passt zu den aktuellen Peer-Abhängigkeiten dieser Konfiguration.
+`npm test` prüft zusätzlich alle elf Sprachen in einer temporären ioBroker-/VIS-2-
+Installation und exportiert deren tatsächliche Objektstruktur. Vorhandene
+ioBroker-Installationen und Projekte werden dabei nicht angefasst.
+
+Dependabot schlägt monatlich Aktualisierungen für npm und GitHub Actions vor.
+Die Vorschläge werden vor dem Zusammenführen geprüft und getestet.
+
+Für ein Release die Änderungen im englischen Changelog unter `WORK IN PROGRESS`
+und die elf Übersetzungen in `io-package.json` unter der Zielversion vorbereiten.
+`npm run release -- patch --dry --yes` zeigt den Plan an;
+`npm run release -- patch --yes` erstellt anschließend den lokalen Release-Commit
+und Tag. `@alcalzone/release-script` mit ioBroker-Plugin gleicht Versionen,
+Changelog und News ab und führt vor dem Commit `release:verify` aus.
+Durch `noPush` erfolgt keine automatische Übertragung: Commit und Tag erst nach
+der Prüfung pushen. Die bestehende offizielle ioBroker-Deployment-Action
+veröffentlicht anschließend nur bei erfolgreichen CI-Prüfungen.
+
 ## Lizenz
 
 MIT, siehe [LICENSE](../../LICENSE).

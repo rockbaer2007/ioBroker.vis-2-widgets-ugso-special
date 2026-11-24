@@ -3,6 +3,19 @@
     "name": "vis-2-widgets-ugso-special",
     "version": "0.1.36",
     "news": {
+      "0.1.37": {
+        "en": "Adopt shared ioBroker linting and release tooling, dependency ranges, JSON schemas and Dependabot; preserve existing projects.",
+        "de": "Gemeinsame ioBroker-Lint- und Release-Werkzeuge, Versionsbereiche, JSON-Schemas und Dependabot einrichten; bestehende Projekte erhalten.",
+        "es": "Incorporar las herramientas compartidas de ioBroker, rangos de versiones, esquemas JSON y Dependabot; conservar los proyectos existentes.",
+        "fr": "Adopter les outils partagés ioBroker, les plages de versions, les schémas JSON et Dependabot ; préserver les projets existants.",
+        "it": "Adottare gli strumenti condivisi ioBroker, intervalli di versione, schemi JSON e Dependabot; preservare i progetti esistenti.",
+        "nl": "Gedeelde ioBroker-controles en releasetools, versiebereiken, JSON-schema’s en Dependabot toevoegen; bestaande projecten behouden.",
+        "pl": "Dodać wspólne narzędzia ioBroker, zakresy wersji, schematy JSON i Dependabot; zachować istniejące projekty.",
+        "pt": "Adotar ferramentas partilhadas ioBroker, intervalos de versões, esquemas JSON e Dependabot; preservar os projetos existentes.",
+        "ru": "Добавлены общие инструменты ioBroker, диапазоны версий, схемы JSON и Dependabot; существующие проекты сохранены.",
+        "uk": "Додано спільні інструменти ioBroker, діапазони версій, схеми JSON і Dependabot; наявні проєкти збережено.",
+        "zh-cn": "采用 ioBroker 共享检查与发布工具、版本范围、JSON 架构及 Dependabot，并保留现有项目。"
+      },
       "0.1.36": {
         "en": "Provide all eleven ioBroker widget languages and verify translation parity in source and build output.",
         "de": "Alle elf ioBroker-Widgetsprachen ergänzen und gleiche Übersetzungsschlüssel in Quelle und Build prüfen.",

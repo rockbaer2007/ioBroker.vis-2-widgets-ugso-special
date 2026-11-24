@@ -17,7 +17,9 @@ describe(adapterName, function () {
         ({ objects } = await helper.startIoBroker());
         ({ page } = await helper.startBrowser(process.env.CI === 'true'));
         // Only this disposable test project is reloaded; discard its unsaved edits.
-        page.on('dialog', dialog => { void (dialog.type() === 'beforeunload' ? dialog.accept() : dialog.dismiss()); });
+        page.on('dialog', dialog => {
+            void (dialog.type() === 'beforeunload' ? dialog.accept() : dialog.dismiss());
+        });
         await helper.createProject();
     });
 
@@ -26,28 +28,38 @@ describe(adapterName, function () {
         const originalLanguage = system.common.language;
         try {
             for (const language of languages) {
-                const messages = require('../src/i18n/' + language + '.json');
+                const messages = require(`../src/i18n/${language}.json`);
                 const expected = messages['ugso_special_Data point A'];
                 const noValue = messages['ugso_special_No numeric values docked'];
                 system.common.language = language;
                 await objects.setObjectAsync('system.config', system);
                 await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
-                await page.waitForFunction((lang, label) =>
-                    window.visRxWidget?.getLanguage() === lang &&
-                    window.visRxWidget.t('ugso_special_Data point A') === label,
-                { timeout: 30000 }, language, expected);
+                await page.waitForFunction(
+                    (lang, label) =>
+                        window.visRxWidget?.getLanguage() === lang &&
+                        window.visRxWidget.t('ugso_special_Data point A') === label,
+                    { timeout: 30000 },
+                    language,
+                    expected,
+                );
                 await helper.palette.openWidgetSet(page, adapterName);
                 const line = await helper.palette.addWidget(page, 'tplUgsoSvgLine');
-                await page.click('#' + line);
-                await helper.screenshot(page, 'editor-' + language);
-                await page.waitForFunction(label => document.body.innerText.includes(label),
-                    { timeout: 10000 }, messages['ugso_special_Data source']);
+                await page.click(`#${line}`);
+                await helper.screenshot(page, `editor-${language}`);
+                await page.waitForFunction(
+                    label => document.body.innerText.includes(label),
+                    { timeout: 10000 },
+                    messages['ugso_special_Data source'],
+                );
                 await helper.view.deleteWidget(page, line);
                 const box = await helper.palette.addWidget(page, 'tplUgsoLineBox');
-                await page.waitForFunction((id, title) =>
-                    document.getElementById(id)?.querySelector('[data-ugso-node]')?.title === title,
-                {}, box, noValue);
-                await helper.screenshot(page, 'language-' + language);
+                await page.waitForFunction(
+                    (id, title) => document.getElementById(id)?.querySelector('[data-ugso-node]')?.title === title,
+                    {},
+                    box,
+                    noValue,
+                );
+                await helper.screenshot(page, `language-${language}`);
                 await helper.view.deleteWidget(page, box);
             }
         } finally {
@@ -68,19 +80,25 @@ describe(adapterName, function () {
     });
 
     it('exports a fresh object dump from the working installed version', async () => {
-        const installed = await objects.getObjectAsync('system.adapter.' + adapterName);
+        const installed = await objects.getObjectAsync(`system.adapter.${adapterName}`);
         assert.equal(installed.common.version, version);
         const result = await objects.getObjectListAsync({
-            startkey: adapterName + '.', endkey: adapterName + '.\u9999', include_docs: true,
+            startkey: `${adapterName}.`,
+            endkey: `${adapterName}.\u9999`,
+            include_docs: true,
         });
         const dump = Object.fromEntries(result.rows.map(row => [row.id, row.doc]));
         assert.ok(Object.keys(dump).length, 'No installed widget metadata found');
-        assert.ok(dump[adapterName + '.admin'], 'Missing widget admin metadata');
-        assert.ok(Object.values(dump).every(object => object.type === 'meta'),
-            'Frontend-only widget set unexpectedly owns runtime objects');
+        assert.ok(dump[`${adapterName}.admin`], 'Missing widget admin metadata');
+        assert.ok(
+            Object.values(dump).every(object => object.type === 'meta'),
+            'Frontend-only widget set unexpectedly owns runtime objects',
+        );
         fs.mkdirSync(path.join(__dirname, '../artifacts'), { recursive: true });
-        fs.writeFileSync(path.join(__dirname, '../artifacts', adapterName + '-' + version + '.objects.json'),
-            JSON.stringify(dump, null, 2) + '\n');
+        fs.writeFileSync(
+            path.join(__dirname, '../artifacts', `${adapterName}-${version}.objects.json`),
+            `${JSON.stringify(dump, null, 2)}\n`,
+        );
     });
 
     after(async () => {

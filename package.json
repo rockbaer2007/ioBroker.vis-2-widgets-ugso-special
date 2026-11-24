@@ -7,7 +7,9 @@
     "test": "mocha test/widgets.test.cjs",
     "test:package": "mocha test/package.test.cjs",
     "test:unit": "mocha test/unit.test.cjs",
-    "lint": "eslint src test vite.config.mjs eslint.config.mjs"
+    "lint": "eslint src test *.mjs --max-warnings 0",
+    "release": "release-script",
+    "release:verify": "npm run build && npm run lint && npm run test:unit && npm run test:package"
   },
   "author": "UGSo-Software <rockbaer2007@live.de>",
   "keywords": [
@@ -18,13 +20,16 @@
   ],
   "type": "module",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@alcalzone/release-script": "^5.2.1",
+    "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
+    "@eslint/js": "^9.39.4",
+    "@iobroker/eslint-config": "^2.3.4",
     "@iobroker/testing": "^6.3.1",
     "@iobroker/vis-2-widgets-testing": "^2.0.1",
-    "@module-federation/vite": "1.23.9",
-    "eslint": "^10.14.0",
+    "@module-federation/vite": "~1.23.9",
+    "eslint": "^9.39.4",
     "globals": "^17.14.0",
-    "vite": "8.3.5"
+    "vite": "~8.3.5"
   },
   "dependencies": {
     "react": "^19.2.0",

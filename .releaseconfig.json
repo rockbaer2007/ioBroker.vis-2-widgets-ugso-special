@@ -1,0 +1,9 @@
+{
+  "plugins": ["iobroker"],
+  "branchPattern": ["main"],
+  "noPush": true,
+  "numNews": 7,
+  "exec": {
+    "before_commit": "npm run release:verify"
+  }
+}

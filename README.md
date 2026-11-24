@@ -26,7 +26,35 @@ welcome native-speaker review.
 
 In the editor, drag a yellow endpoint handle to snap a line to a node or another line. A line with an arrowhead cannot use that endpoint for visual docking. LineBox input and output selection controls value routing independently of docking.
 
+## Development and releases
+
+Use `npm ci` to install the locked dependencies. `npm run release:verify` builds
+the widgets and runs shared ioBroker ESLint, unit tests and package validation.
+`npm test` additionally runs the disposable ioBroker/VIS 2 browser fixture in all
+eleven languages and exports its actual object structure. It does not access an
+existing ioBroker installation.
+
+The shared ESLint and Prettier configuration comes from `@iobroker/eslint-config`.
+ESLint 9 matches its current peer dependencies. Dependabot proposes monthly npm
+and GitHub Actions updates; these are reviewed and tested before merging.
+
+Prepare the next changelog under `WORK IN PROGRESS` and provide all eleven news
+translations in `io-package.json` under the target version. Run
+`npm run release -- patch --dry --yes` to review the release plan, then
+`npm run release -- patch --yes` to create the local release commit and tag.
+`@alcalzone/release-script` with its ioBroker plugin synchronizes package versions,
+changelog and news and executes `release:verify` before committing. The configured
+`noPush` default keeps publication explicit: after review, push the commit and tag.
+The existing official ioBroker deployment action publishes only after CI passes.
+
 ## Changelog
+
+<!-- Add the next release notes below this marker. -->
+### **WORK IN PROGRESS**
+
+- Adopt the shared ioBroker ESLint/Prettier configuration and release-script with its ioBroker plugin.
+- Add monthly Dependabot checks, editor JSON schemas and compatible dependency ranges.
+- Preserve widget templates, stored configuration and existing VIS projects.
 
 ### 0.1.36
 

@@ -48,20 +48,24 @@ Wähle die Linie im Editor aus und ziehe einen gelben Ring am Start oder Ende au
 `npm ci` installiert die im Lockfile festgelegten Abhängigkeiten.
 `npm run release:verify` baut die Widgets und prüft sie mit der gemeinsamen
 ioBroker-ESLint-/Prettier-Konfiguration, Unit-Tests und Paketvalidierung.
-ESLint 9 passt zu den aktuellen Peer-Abhängigkeiten dieser Konfiguration.
+ESLint wird über die Peer-Abhängigkeiten dieser Konfiguration installiert.
 `npm test` prüft zusätzlich alle elf Sprachen in einer temporären ioBroker-/VIS-2-
 Installation und exportiert deren tatsächliche Objektstruktur. Vorhandene
 ioBroker-Installationen und Projekte werden dabei nicht angefasst.
 
-Dependabot schlägt monatlich Aktualisierungen für npm und GitHub Actions vor.
-Die Vorschläge werden vor dem Zusammenführen geprüft und getestet.
+Dependabot prüft npm und GitHub Actions monatlich zu versetzten Cron-Zeiten,
+mit bis zu 15 offenen Vorschlägen je Bereich. Für npm-Versionsupdates gelten
+sieben Tage Wartezeit; Hauptversionen der Node-Typdefinitionen werden bewusst
+manuell aktualisiert. Vorschläge werden geprüft, getestet und manuell
+zusammengeführt. Automatisches Zusammenführen bleibt absichtlich deaktiviert.
 
 Für ein Release die Änderungen im englischen Changelog unter `WORK IN PROGRESS`
 und die elf Übersetzungen in `io-package.json` unter der Zielversion vorbereiten.
 `npm run release -- patch --dry --yes` zeigt den Plan an;
 `npm run release -- patch --yes` erstellt anschließend den lokalen Release-Commit
-und Tag. `@alcalzone/release-script` mit ioBroker-Plugin gleicht Versionen,
-Changelog und News ab und führt vor dem Commit `release:verify` aus.
+und Tag. `@alcalzone/release-script` mit ioBroker-, Lizenz- und Review-Plugin
+gleicht Versionen, Changelog und News ab, prüft Lizenzjahre und fordert eine
+abschließende Diff-Prüfung an. Vor dem Commit wird `release:verify` ausgeführt.
 Durch `noPush` erfolgt keine automatische Übertragung: Commit und Tag erst nach
 der Prüfung pushen. Die bestehende offizielle ioBroker-Deployment-Action
 veröffentlicht anschließend nur bei erfolgreichen CI-Prüfungen.

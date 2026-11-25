@@ -3,6 +3,19 @@
     "name": "vis-2-widgets-ugso-special",
     "version": "0.1.37",
     "news": {
+      "0.1.38": {
+        "en": "Correct release and lint tooling, schema matching and Dependabot protections; preserve existing projects.",
+        "de": "Release- und Lint-Werkzeuge, Schema-Zuordnung und Dependabot-Schutz korrigieren; bestehende Projekte erhalten.",
+        "es": "Corregir herramientas de publicación, esquemas y protección de Dependabot; conservar los proyectos.",
+        "fr": "Corriger les outils de publication, les schémas et les protections Dependabot ; préserver les projets.",
+        "it": "Correggere strumenti di rilascio, schemi e protezioni Dependabot; preservare i progetti.",
+        "nl": "Releasetools, schemakoppeling en Dependabot-beveiliging corrigeren; projecten behouden.",
+        "pl": "Poprawić narzędzia wydawania, schematy i zabezpieczenia Dependabot; zachować projekty.",
+        "pt": "Corrigir ferramentas de publicação, esquemas e proteções Dependabot; preservar projetos.",
+        "ru": "Исправлены инструменты выпуска, схемы и защита Dependabot; проекты сохранены.",
+        "uk": "Виправлено інструменти випуску, схеми та захист Dependabot; проєкти збережено.",
+        "zh-cn": "修正发布工具、架构匹配及 Dependabot 保护，保留现有项目。"
+      },
       "0.1.37": {
         "en": "Adopt shared ioBroker linting and release tooling, dependency ranges, JSON schemas and Dependabot; preserve existing projects.",
         "de": "Gemeinsame ioBroker-Lint- und Release-Werkzeuge, Versionsbereiche, JSON-Schemas und Dependabot einrichten; bestehende Projekte erhalten.",

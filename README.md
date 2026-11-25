@@ -35,21 +35,31 @@ eleven languages and exports its actual object structure. It does not access an
 existing ioBroker installation.
 
 The shared ESLint and Prettier configuration comes from `@iobroker/eslint-config`.
-ESLint 9 matches its current peer dependencies. Dependabot proposes monthly npm
-and GitHub Actions updates; these are reviewed and tested before merging.
+ESLint is installed through the shared configuration's peer dependencies.
+Dependabot checks npm and GitHub Actions monthly at staggered cron times, with
+up to 15 open requests per ecosystem. npm version updates have a seven-day
+cooldown; Node type major updates require deliberate review. Updates are tested
+and merged manually; automatic merging is intentionally disabled.
 
 Prepare the next changelog under `WORK IN PROGRESS` and provide all eleven news
 translations in `io-package.json` under the target version. Run
 `npm run release -- patch --dry --yes` to review the release plan, then
 `npm run release -- patch --yes` to create the local release commit and tag.
-`@alcalzone/release-script` with its ioBroker plugin synchronizes package versions,
-changelog and news and executes `release:verify` before committing. The configured
+`@alcalzone/release-script` with its ioBroker, license and manual-review plugins
+synchronizes package versions, changelog and news, checks license years and asks
+for a final diff review. It executes `release:verify` before committing. The configured
 `noPush` default keeps publication explicit: after review, push the commit and tag.
 The existing official ioBroker deployment action publishes only after CI passes.
 
 ## Changelog
 
 <!-- Add the next release notes below this marker. -->
+### **WORK IN PROGRESS**
+
+- Correct shared ESLint dependencies, release plugins and editor schema matching.
+- Add a seven-day npm update cooldown, protect Node type major versions and stagger Dependabot checks.
+- Preserve existing widget settings and VIS projects; keep dependency merges manually reviewed.
+
 ### 0.1.37 (2026-11-24)
 
 - Adopt the shared ioBroker ESLint/Prettier configuration and release-script with its ioBroker plugin.

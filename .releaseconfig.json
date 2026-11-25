@@ -1,5 +1,5 @@
 {
-  "plugins": ["iobroker"],
+  "plugins": ["iobroker", "license", "manual-review"],
   "branchPattern": ["main"],
   "noPush": true,
   "numNews": 7,

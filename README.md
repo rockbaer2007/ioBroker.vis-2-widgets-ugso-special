@@ -54,7 +54,7 @@ The existing official ioBroker deployment action publishes only after CI passes.
 ## Changelog
 
 <!-- Add the next release notes below this marker. -->
-### **WORK IN PROGRESS**
+### 0.1.38 (2026-11-25)
 
 - Correct shared ESLint dependencies, release plugins and editor schema matching.
 - Add a seven-day npm update cooldown, protect Node type major versions and stagger Dependabot checks.
@@ -84,10 +84,6 @@ The existing official ioBroker deployment action publishes only after CI passes.
 - Complete all eleven catalogue changelog languages and remove duplicate/unpublished news entries.
 - Add linting and ioBroker package validation to CI; use the official deployment action with trusted publishing.
 - Declare the React runtime dependencies explicitly. Widget IDs, configuration and VIS projects are unchanged.
-
-### 0.1.33
-
-- Publish the renamed package through trusted publishing with npm provenance.
 
 Older entries: [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 

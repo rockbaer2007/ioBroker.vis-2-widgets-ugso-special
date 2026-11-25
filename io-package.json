@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "vis-2-widgets-ugso-special",
-    "version": "0.1.37",
+    "version": "0.1.38",
     "news": {
       "0.1.38": {
         "en": "Correct release and lint tooling, schema matching and Dependabot protections; preserve existing projects.",

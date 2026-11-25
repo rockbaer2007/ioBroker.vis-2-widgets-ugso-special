@@ -35,10 +35,15 @@ identity, option keys and runtime behavior are unchanged.
   with VIS 2 2.20.11 (51 seconds), including all eleven languages, palette loading
   and fresh installed-package object export.
 - Release dry-run, actual preparation and `git diff --check` passed.
-- The local repository checker 5.24.3 no longer reports E0078, E5025, E8915,
-  E8917, W4040, S5026, S8906 or S8908. Before publication it still reports the
-  expected unpublished version/tag and remote CI-log availability findings.
-  Scanning a clean source archive avoids unrelated test-fixture directories.
+- Repository checker 5.24.3 reports **no errors** after the tag was pushed.
+  E0078, E5025, E8915, E8917, W4040, S5026, S8906 and S8908 are cleared.
+  Remaining warnings concern npm version visibility, unauthenticated CI-log
+  retrieval and pending LATEST inclusion. Scanning a clean source archive
+  avoids unrelated test-fixture directories.
+- GitHub CI passed all 47 package tests, five unit tests and three browser
+  tests. The trusted npm publishing action and GitHub release completed:
+  [release CI](https://github.com/rockbaer2007/ioBroker.vis-2-widgets-ugso-special/actions/runs/45677643942).
+  npm registry visibility was still lagging during the immediate final check.
 
 The fresh `vis-2-widgets-ugso-special-0.1.38.objects.json` is exported from the
 installed package, not hand-written. It contains one installer-created admin
@@ -50,3 +55,4 @@ dump and screenshots as review evidence.
 `npm audit` reports eight moderate findings in development/test tooling. These
 are not runtime widget dependencies. No force upgrade or downgrade of the
 official browser fixture was applied as part of these configuration fixes.
+`npm audit --omit=dev` reports zero vulnerabilities.
